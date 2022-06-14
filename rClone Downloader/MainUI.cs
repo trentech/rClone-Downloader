@@ -36,13 +36,20 @@ namespace rClone_Downloader
                 }
             }
 
+            string drive = Properties.Settings.Default.Drive;
+            if (drive == "" || !drivesList.Items.Contains(drive))
+            {
+                drivesList.SelectedIndex = 0;
+            } else
+            {
+                drivesList.SelectedItem = drive;
+            }
+
             if(drivesList.Items.Count == 0)
             {
                 MessageBox.Show("No Drives configured in rClone", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Close();
             }
-
-            drivesList.SelectedIndex = 0;
 
             if (Properties.Settings.Default.Source != "" && Properties.Settings.Default.Source != null)
             {
@@ -87,24 +94,45 @@ namespace rClone_Downloader
 
         private void onButtonGo(object sender, EventArgs e)
         {
+            string source;
             if(textBoxSource.Text == "Source" || textBoxSource.Text == "")
             {
-                Search("/");
+                source = "/";
             } else
             {
-                Search(textBoxSource.Text);
+                source = textBoxSource.Text;
             }
+
+            if (source.Substring(source.Length - 1) == "/")
+            {
+                source = source.Substring(0, source.Length - 1);
+            }
+
+            if (!source.StartsWith("/"))
+            {
+                source = "/" + source;
+            }
+
+            textBoxSource.Text = source;
+
+            Properties.Settings.Default.Source = textBoxSource.Text;
+            Properties.Settings.Default.Drive = drivesList.SelectedItem.ToString();
+            Properties.Settings.Default.Save();
+
+            Search();
         }
 
         private void onButtonBack(object sender, EventArgs e)
         {
-            string[] split = textBoxSource.Text.TrimStart('/').Split('/');
+            string source = Properties.Settings.Default.Source;
 
-            if(textBoxSource.Text != "/")
+            string[] split = source.TrimStart('/').Split('/');
+
+            if(source != "/")
             {
                 if(split.Length == 1)
                 {
-                    Search("/");
+                    Properties.Settings.Default.Source = "/";
                 } else
                 {
                     string parent = null;
@@ -128,8 +156,12 @@ namespace rClone_Downloader
                         }
                     }
 
-                    Search(parent.Substring(0, parent.Length - 1));
+                    Properties.Settings.Default.Source = parent.Substring(0, parent.Length - 1);
                 }
+
+                Properties.Settings.Default.Save();
+
+                Search();
             }
         }
         
@@ -172,15 +204,12 @@ namespace rClone_Downloader
 
         private void onButtonAdd(object sender, EventArgs e)
         {
-            string source = textBoxSource.Text;
-            if (!textBoxSource.Text.StartsWith("/"))
-            {
-                source = "/" + textBoxSource.Text;
-            }
+            string source = Properties.Settings.Default.Source;
+            string drive = Properties.Settings.Default.Drive;
 
             foreach (ListViewItem file in listFiles.SelectedItems)
             {
-                string fileName = drivesList.SelectedItem.ToString() + ":" + source + "/" + file.SubItems[0].Text;
+                string fileName = drive + ":" + source + "/" + file.SubItems[0].Text;
 
                 if (listDownloads.FindItemWithText(fileName) == null)
                 {
@@ -216,7 +245,6 @@ namespace rClone_Downloader
         {
             foreach (ListViewItem file in listDownloads.SelectedItems)
             {
-                string fileName = file.SubItems[0].Text;
                 string status = file.SubItems[1].Text;
 
                 if (status.StartsWith("Queued") || status.StartsWith("Complete") || status.StartsWith("Error:") || status.StartsWith("Skipped"))
@@ -232,14 +260,20 @@ namespace rClone_Downloader
 
             if(listFiles.SelectedItems[0].ImageIndex == 1)
             {
-                if (textBoxSource.Text.EndsWith("/"))
+                string source = Properties.Settings.Default.Source;
+
+                if (source.EndsWith("/"))
                 {
-                    Search(textBoxSource.Text + item);
+                    Properties.Settings.Default.Source = textBoxSource.Text + item;
                 }
                 else
                 {
-                    Search(textBoxSource.Text + "/" + item);
+                    Properties.Settings.Default.Source = textBoxSource.Text + "/" + item;
                 }
+
+                Properties.Settings.Default.Save();
+
+                Search();
             }
         }
 
@@ -400,11 +434,7 @@ namespace rClone_Downloader
             {
                 var items = (List<ListViewItem>)e.Data.GetData(typeof(List<ListViewItem>));
 
-                string source = textBoxSource.Text;
-                if (!textBoxSource.Text.StartsWith("/"))
-                {
-                    source = "/" + textBoxSource.Text;
-                }
+                string source = Properties.Settings.Default.Source;
 
                 foreach (ListViewItem file in items)
                 {
@@ -444,8 +474,6 @@ namespace rClone_Downloader
         private void onDrag(object sender, ItemDragEventArgs e)
         {
             List<ListViewItem> items = new List<ListViewItem>();
-
-            //items.Add((ListViewItem)e.Item);
 
             foreach (ListViewItem item in listFiles.SelectedItems)
             {
@@ -494,8 +522,11 @@ namespace rClone_Downloader
             }
         }
 
-        private async Task<string> UpdateList(string drive, string path)
+        private async Task<string> UpdateList()
         {
+            string source = Properties.Settings.Default.Source;
+            string drive = Properties.Settings.Default.Drive;
+
             folders.Clear();
             files.Clear();
 
@@ -503,12 +534,19 @@ namespace rClone_Downloader
 
             await Task.Run(() =>
             {
-                string args = "lsf --format stp --separator \"|\" \"" + drive + ":" + path + "\"";
+                string args = "lsf --format stp --separator \"|\" \"" + drive + ":" + source + "\"";
 
-                if(textBoxFilter.Text != "" && textBoxFilter.Text != "Filter")
+                if (textBoxFilter.Text == "" || textBoxFilter.Text == "Filter")
+                {
+                    Properties.Settings.Default.Filter = "";
+                }
+                else
                 {
                     args = args + " " + textBoxFilter.Text;
+                    Properties.Settings.Default.Filter = textBoxFilter.Text;
                 }
+
+                Properties.Settings.Default.Save();
 
                 listProcess = new Process
                 {
@@ -548,7 +586,7 @@ namespace rClone_Downloader
             return error;
         }
 
-        private async void Search(string path)
+        private async void Search()
         {
             Write("Searching...");
 
@@ -558,35 +596,9 @@ namespace rClone_Downloader
             buttonBack.Enabled = false;
             buttonGo.Enabled = false;
 
-            string drive = drivesList.SelectedItem.ToString();
-
-            if (path.Substring(path.Length - 1) == "/")
-            {
-                path = path.Substring(0, path.Length - 1);
-            }
-
-            if(!path.StartsWith("/"))
-            {
-                path = "/" + path;
-            }
-
             listFiles.Items.Clear();
 
-            textBoxSource.Text = path;
-
-            Properties.Settings.Default.Source = textBoxSource.Text;
-
-            if(textBoxFilter.Text == "" && textBoxFilter.Text == "Filter")
-            {
-                Properties.Settings.Default.Filter = "";
-            } else
-            {
-                Properties.Settings.Default.Filter = textBoxFilter.Text;
-            }
-
-            Properties.Settings.Default.Save();
-
-            string error = await UpdateList(drive, path);
+            string error = await UpdateList();
 
             if (error != "")
             {
@@ -652,7 +664,7 @@ namespace rClone_Downloader
             buttonGo.Enabled = true;
         }
 
-        private async Task<string> Download(string name, string destPath)
+        private async Task<string> Download(string name, string destination)
         {
             string error = null;
 
@@ -660,19 +672,19 @@ namespace rClone_Downloader
             {
                 string[] split = name.Split('/');
 
-                string dest = destPath + @"\" + split[split.Length - 1];
+                destination = destination + @"\" + split[split.Length - 1];
 
-                if(File.Exists(dest))
+                if(File.Exists(destination))
                 {
                     if (radioOverwrite.Checked)
                     {
-                        File.Delete(dest);
+                        File.Delete(destination);
                     } else if(radioSkip.Checked)
                     {
                         return;
                     } else if(radioPrompt.Checked)
                     {
-                        DialogResult result = MessageBox.Show(dest + "\r\n File Already Exists. Overwrite?", "File Exists", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+                        DialogResult result = MessageBox.Show(destination + "\r\n File Already Exists. Overwrite?", "File Exists", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
 
                         if (result == DialogResult.Cancel)
                         {
@@ -687,7 +699,7 @@ namespace rClone_Downloader
                         }
                         else if (result == DialogResult.Yes)
                         {
-                            File.Delete(dest);
+                            File.Delete(destination);
                         }
                     }
                 }
@@ -697,7 +709,7 @@ namespace rClone_Downloader
                     StartInfo = new ProcessStartInfo
                     {
                         FileName = rclone,
-                        Arguments = "copyto \"" + name + "\" \"" + dest + "\" -P -q",
+                        Arguments = "copyto \"" + name + "\" \"" + destination + "\" -P -q",
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
@@ -714,7 +726,7 @@ namespace rClone_Downloader
                 if(cancel)
                 {
                     error = "Cancel";
-                    File.Delete(dest);
+                    File.Delete(destination);
                 } else
                 {
                     error = downloadProcess.StandardError.ReadToEnd();
@@ -727,7 +739,7 @@ namespace rClone_Downloader
             return error;
         }
 
-        private async void DownloadFiles(string destPath)
+        private async void DownloadFiles(string destination)
         {
             if(downloading)
             {
@@ -754,7 +766,7 @@ namespace rClone_Downloader
 
                 UpdateListViewItem(fileName, "Initializing", "", "", "");
 
-                string error = await Download(fileName, destPath);
+                string error = await Download(fileName, destination);
 
                 if (error != "" && error != null)
                 {
@@ -791,7 +803,7 @@ namespace rClone_Downloader
             downloading = false;
         }
 
-        private void ProcessOutput(object sendingProcess, DataReceivedEventArgs outLine, string file)
+        private void ProcessOutput(object sendingProcess, DataReceivedEventArgs outLine, string fileName)
         {
             if (!String.IsNullOrEmpty(outLine.Data))
             {
@@ -812,50 +824,50 @@ namespace rClone_Downloader
                         string stats = split[2].TrimStart();
                         string[] split2 = stats.Split(',');
 
-                        UpdateListViewItem(file, "Downloading", split2[0].TrimStart(), split2[2].TrimStart(), split2[3].Replace(" ETA ", ""));
+                        UpdateListViewItem(fileName, "Downloading", split2[0].TrimStart(), split2[2].TrimStart(), split2[3].Replace(" ETA ", ""));
                     }
                 }
             }
         }
 
-        private void UpdateListViewItem(string name, string status, string progress, string speed, string eta)
+        private void UpdateListViewItem(string fileName, string status, string progress, string speed, string eta)
         {
 
             if (this.listDownloads.InvokeRequired)
             {
                 this.BeginInvoke(new MethodInvoker(() => {
-                    listDownloads.FindItemWithText(name).SubItems[1].Text = status;
-                    listDownloads.FindItemWithText(name).SubItems[2].Text = progress;
-                    listDownloads.FindItemWithText(name).SubItems[3].Text = speed;
-                    listDownloads.FindItemWithText(name).SubItems[4].Text = eta;
+                    listDownloads.FindItemWithText(fileName).SubItems[1].Text = status;
+                    listDownloads.FindItemWithText(fileName).SubItems[2].Text = progress;
+                    listDownloads.FindItemWithText(fileName).SubItems[3].Text = speed;
+                    listDownloads.FindItemWithText(fileName).SubItems[4].Text = eta;
                 }));
             }
             else
             {
-                listDownloads.FindItemWithText(name).SubItems[1].Text = status;
-                listDownloads.FindItemWithText(name).SubItems[2].Text = progress;
-                listDownloads.FindItemWithText(name).SubItems[3].Text = speed;
-                listDownloads.FindItemWithText(name).SubItems[4].Text = eta;
+                listDownloads.FindItemWithText(fileName).SubItems[1].Text = status;
+                listDownloads.FindItemWithText(fileName).SubItems[2].Text = progress;
+                listDownloads.FindItemWithText(fileName).SubItems[3].Text = speed;
+                listDownloads.FindItemWithText(fileName).SubItems[4].Text = eta;
             }
         }
 
-        private void UpdateListViewItem(string name, string status)
+        private void UpdateListViewItem(string fileName, string status)
         {
             if (this.listDownloads.InvokeRequired)
             {
                 this.BeginInvoke(new MethodInvoker(() => {
-                    listDownloads.FindItemWithText(name).SubItems[1].Text = status;
-                    listDownloads.FindItemWithText(name).SubItems[2].Text = "";
-                    listDownloads.FindItemWithText(name).SubItems[3].Text = "";
-                    listDownloads.FindItemWithText(name).SubItems[4].Text = "";
+                    listDownloads.FindItemWithText(fileName).SubItems[1].Text = status;
+                    listDownloads.FindItemWithText(fileName).SubItems[2].Text = "";
+                    listDownloads.FindItemWithText(fileName).SubItems[3].Text = "";
+                    listDownloads.FindItemWithText(fileName).SubItems[4].Text = "";
                 }));
             }
             else
             {
-                listDownloads.FindItemWithText(name).SubItems[1].Text = status;
-                listDownloads.FindItemWithText(name).SubItems[2].Text = "";
-                listDownloads.FindItemWithText(name).SubItems[3].Text = "";
-                listDownloads.FindItemWithText(name).SubItems[4].Text = "";
+                listDownloads.FindItemWithText(fileName).SubItems[1].Text = status;
+                listDownloads.FindItemWithText(fileName).SubItems[2].Text = "";
+                listDownloads.FindItemWithText(fileName).SubItems[3].Text = "";
+                listDownloads.FindItemWithText(fileName).SubItems[4].Text = "";
             }
         }
 

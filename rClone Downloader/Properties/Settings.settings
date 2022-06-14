@@ -17,7 +17,7 @@
     <Setting Name="Action" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="Setting" Type="System.String" Scope="User">
+    <Setting Name="Drive" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>
