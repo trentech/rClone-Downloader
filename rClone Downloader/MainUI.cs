@@ -7,6 +7,8 @@ using System.Windows.Forms;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Globalization;
+using System.Text.RegularExpressions;
+using System.Drawing;
 
 namespace rClone_Downloader
 {
@@ -19,6 +21,7 @@ namespace rClone_Downloader
         private string rclone = null;
         private static BlockingCollection<string> queue = new BlockingCollection<string>();
         private bool downloading = false;
+        private bool cancel = false;
 
         public MainUI()
         {
@@ -61,9 +64,24 @@ namespace rClone_Downloader
                 textBoxFilter.Text = Properties.Settings.Default.Filter;
             }
 
-            if (Properties.Settings.Default.Destination != "")
+            if (Properties.Settings.Default.Destination == "" || Properties.Settings.Default.Destination == "..")
+            {
+                foreach (var dDrive in DriveInfo.GetDrives())
+                {
+                    ListViewItem drive1 = new ListViewItem(dDrive.Name.Trim());
+
+                    drive1.SubItems.Add("");
+                    drive1.SubItems.Add(getSize(dDrive.TotalSize));
+                    drive1.ImageIndex = 2;
+
+                    listLocalFiles.Items.Add(drive1);
+                }
+
+                textBoxDest.Text = "..";
+            } else
             {
                 textBoxDest.Text = Properties.Settings.Default.Destination;
+                SearchLocal(textBoxDest.Text);
             }
 
             if (Properties.Settings.Default.Action == "" || Properties.Settings.Default.Action == "Prompt")
@@ -92,7 +110,7 @@ namespace rClone_Downloader
             }
         }
 
-        private void onButtonGo(object sender, EventArgs e)
+        private void onButtonSearch(object sender, EventArgs e)
         {
             string source;
             if(textBoxSource.Text == "Source" || textBoxSource.Text == "")
@@ -119,146 +137,14 @@ namespace rClone_Downloader
             Properties.Settings.Default.Drive = drivesList.SelectedItem.ToString();
             Properties.Settings.Default.Save();
 
-            Search();
+            SearchRClone();
         }
 
-        private void onButtonBack(object sender, EventArgs e)
-        {
-            string source = Properties.Settings.Default.Source;
-
-            string[] split = source.TrimStart('/').Split('/');
-
-            if(source != "/")
-            {
-                if(split.Length == 1)
-                {
-                    Properties.Settings.Default.Source = "/";
-                } else
-                {
-                    string parent = null;
-
-                    for (int i = 0; i < split.Length; i++)
-                    {
-                        if ((i + 1) == split.Length)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            if (parent == null)
-                            {
-                                parent = split[i] + "/";
-                            }
-                            else
-                            {
-                                parent = parent + split[i] + "/";
-                            }
-                        }
-                    }
-
-                    Properties.Settings.Default.Source = parent.Substring(0, parent.Length - 1);
-                }
-
-                Properties.Settings.Default.Save();
-
-                Search();
-            }
-        }
-        
-        private void onButtonDownload(object sender, EventArgs e)
-        {
-            if (textBoxDest.Text == "" || textBoxDest.Text == "Destination")
-            {
-                onButtonBrowse(sender, e);
-
-                return;
-            }
-
-            Properties.Settings.Default.Destination = textBoxDest.Text;
-            Properties.Settings.Default.Save();
-
-            DownloadFiles(textBoxDest.Text);
-        }
-
-        private void onButtonBrowse(object sender, EventArgs e)
-        {
-            FolderBrowserDialog openFolderDialog = new FolderBrowserDialog();
-
-            DialogResult dialogResult = openFolderDialog.ShowDialog();
-
-            if (dialogResult == DialogResult.OK)
-            {
-                string directory = openFolderDialog.SelectedPath;
-
-                textBoxDest.Text = directory;
-
-                Properties.Settings.Default.Destination = textBoxDest.Text;
-                Properties.Settings.Default.Save();
-
-                if (listFiles.CheckedItems.Count != 0)
-                {
-                    buttonDownload.Enabled = true;
-                }
-            }
-        }
-
-        private void onButtonAdd(object sender, EventArgs e)
-        {
-            string source = Properties.Settings.Default.Source;
-            string drive = Properties.Settings.Default.Drive;
-
-            foreach (ListViewItem file in listFiles.SelectedItems)
-            {
-                string fileName = drive + ":" + source + "/" + file.SubItems[0].Text;
-
-                if (listDownloads.FindItemWithText(fileName) == null)
-                {
-                    ListViewItem item = new ListViewItem(fileName);
-                    item.SubItems.Add("Queued");
-                    item.SubItems.Add("");
-                    item.SubItems.Add("");
-                    item.SubItems.Add("");
-
-                    listDownloads.Items.Add(item);
-
-                    queue.Add(fileName);
-                }
-            }
-
-            if (!downloading)
-            {
-                if (textBoxDest.Text == "" || textBoxDest.Text == "Destination")
-                {
-                    onButtonBrowse(sender, e);
-
-                    return;
-                }
-
-                Properties.Settings.Default.Destination = textBoxDest.Text;
-                Properties.Settings.Default.Save();
-
-                DownloadFiles(textBoxDest.Text);
-            }
-        }
-
-        private void onButtonRemove(object sender, EventArgs e)
-        {
-            foreach (ListViewItem file in listDownloads.SelectedItems)
-            {
-                string status = file.SubItems[1].Text;
-
-                if (status.StartsWith("Queued") || status.StartsWith("Complete") || status.StartsWith("Error:") || status.StartsWith("Skipped"))
-                {
-                    listDownloads.Items.Remove(file);
-                }
-            }
-        }
-
-        private void onListClick(object sender, EventArgs e)
+        private void onListrCloneDoubleClick(object sender, EventArgs e)
         {
             string item = listFiles.SelectedItems[0].SubItems[0].Text;
 
-            if(listFiles.SelectedItems[0].ImageIndex == 1)
+            if (listFiles.SelectedItems[0].ImageIndex == 1)
             {
                 string source = Properties.Settings.Default.Source;
 
@@ -273,41 +159,65 @@ namespace rClone_Downloader
 
                 Properties.Settings.Default.Save();
 
-                Search();
+                SearchRClone();
             }
-        }
+            else if (listFiles.SelectedItems[0].ImageIndex == 3)
+            {
+                string source = Properties.Settings.Default.Source;
 
-        private void onListChange(object sender, ItemCheckedEventArgs e)
-        {
-            if (listFiles.CheckedItems.Count == 0)
-            {
-                buttonDownload.Enabled = false;
-            }
-            else
-            {
-                if (textBoxDest.Text != "" && textBoxDest.Text != "Destination")
+                string[] split = source.TrimStart('/').Split('/');
+
+                if (source != "/")
                 {
-                    buttonDownload.Enabled = true;
+                    if (split.Length == 1)
+                    {
+                        Properties.Settings.Default.Source = "/";
+                    }
+                    else
+                    {
+                        string parent = null;
+
+                        for (int i = 0; i < split.Length; i++)
+                        {
+                            if ((i + 1) == split.Length)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                if (parent == null)
+                                {
+                                    parent = split[i] + "/";
+                                }
+                                else
+                                {
+                                    parent = parent + split[i] + "/";
+                                }
+                            }
+                        }
+
+                        Properties.Settings.Default.Source = parent.Substring(0, parent.Length - 1);
+                    }
+
+                    Properties.Settings.Default.Save();
+
+                    SearchRClone();
                 }
             }
         }
 
-        private void onTextDestChange(object sender, EventArgs e)
+        private void onListLocalDoubleClick(object sender, EventArgs e)
         {
-            if (textBoxDest.Text == "Destination" || textBoxDest.Text == "")
-            {
-                textBoxDest.ForeColor = System.Drawing.Color.Gray;
-                buttonDownload.Enabled = false;
-            }
-            else
-            {
-                textBoxDest.ForeColor = System.Drawing.Color.Black;
+            ListViewItem selected = listLocalFiles.SelectedItems[0];
 
-                if (textBoxSource.Text != "Source" && textBoxSource.Text != "")
-                {
-                    buttonDownload.Enabled = true;
-                }
+            string selectedDirectory = selected.SubItems[0].Text;
+
+            if (selectedDirectory != ".." && selected.ImageIndex == 0)
+            {
+                return;
             }
+
+            SearchLocal(selectedDirectory);
         }
 
         private void onTextFilterChange(object sender, EventArgs e)
@@ -322,47 +232,11 @@ namespace rClone_Downloader
             }
         }
 
-        private void onTextSourceChange(object sender, EventArgs e)
-        {
-            if (textBoxSource.Text == "Source" || textBoxSource.Text == "")
-            {
-                textBoxSource.ForeColor = System.Drawing.Color.Gray;
-            }
-            else
-            {
-                textBoxSource.ForeColor = System.Drawing.Color.Black;
-            }
-        }
-
-        private void onTextSourceEnter(object sender, EventArgs e)
-        {
-            if (textBoxSource.Text == "Source")
-            {
-                textBoxSource.Text = "";
-            }
-        }
-
-        private void onTextSourceLeave(object sender, EventArgs e)
-        {
-            if (textBoxSource.Text == "")
-            {
-                textBoxSource.Text = "Source";
-            }
-        }
-
-        private void onTextSourceKey(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar == (char)Keys.Enter)
-            {
-                onButtonGo(sender, e);
-            }
-        }
-
         private void onTextFilterKey(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Enter)
             {
-                onButtonGo(sender, e);
+                onButtonSearch(sender, e);
             }
         }
 
@@ -379,22 +253,6 @@ namespace rClone_Downloader
             if (textBoxFilter.Text == "")
             {
                 textBoxFilter.Text = "Filter";
-            }
-        }
-
-        private void onTextDestEnter(object sender, EventArgs e)
-        {
-            if (textBoxDest.Text == "Destination")
-            {
-                textBoxDest.Text = "";
-            }
-        }
-
-        private void onTextDestLeave(object sender, EventArgs e)
-        {
-            if (textBoxDest.Text == "")
-            {
-                textBoxDest.Text = "Destination";
             }
         }
 
@@ -438,11 +296,28 @@ namespace rClone_Downloader
 
                 foreach (ListViewItem file in items)
                 {
-                    string fileName = drivesList.SelectedItem.ToString() + ":" + source + "/" + file.SubItems[0].Text;
-
-                    if (listDownloads.FindItemWithText(fileName) == null)
+                    string fileName;
+                    if (source == "/")
                     {
-                        ListViewItem item = new ListViewItem(fileName);
+                        fileName = drivesList.SelectedItem.ToString() + ":" + source + file.SubItems[0].Text;
+                    } else
+                    {
+                        fileName = drivesList.SelectedItem.ToString() + ":" + source + "/" + file.SubItems[0].Text;
+                    }
+
+                    string destination;
+                    if (listLocalFiles.SelectedItems.Count == 0)
+                    {
+                        destination = Properties.Settings.Default.Destination;
+                    }
+                    else
+                    {
+                        destination = Properties.Settings.Default.Destination + listLocalFiles.SelectedItems[0].SubItems[0].Text;
+                    }
+
+                    if (!ItemExists(fileName, file.SubItems[0].Text, destination))
+                    {
+                        ListViewItem item = new ListViewItem((fileName + " >> " + destination + @"\" + file.SubItems[0].Text).Replace(@"\\", @"\"));
                         item.SubItems.Add("Queued");
                         item.SubItems.Add("");
                         item.SubItems.Add("");
@@ -450,23 +325,13 @@ namespace rClone_Downloader
 
                         listDownloads.Items.Add(item);
 
-                        queue.Add(fileName);
+                        queue.Add((fileName + ";" + destination + @"\" + file.SubItems[0].Text).Replace(@"\\", @"\"));
                     }
                 }
 
                 if(!downloading)
                 {
-                    if (textBoxDest.Text == "" || textBoxDest.Text == "Destination")
-                    {
-                        onButtonBrowse(sender, e);
-
-                        return;
-                    }
-
-                    Properties.Settings.Default.Destination = textBoxDest.Text;
-                    Properties.Settings.Default.Save();
-
-                    DownloadFiles(textBoxDest.Text);
+                    DownloadFiles();
                 }
             }
         }
@@ -477,9 +342,9 @@ namespace rClone_Downloader
 
             foreach (ListViewItem item in listFiles.SelectedItems)
             {
-                if (item.ImageIndex == 1)
+                if (item.ImageIndex == 1 || item.ImageIndex == 3)
                 {
-                    return;
+                    continue;
                 }
 
                 items.Add(item);
@@ -490,34 +355,143 @@ namespace rClone_Downloader
 
         private void onDragOver(object sender, DragEventArgs e)
         {
+            listLocalFiles.Select();
+
+            listLocalFiles.SelectedItems.Clear();
+
             if (e.Data.GetDataPresent(typeof(List<ListViewItem>)))
             {
-                e.Effect = DragDropEffects.Copy;
+                e.Effect = e.AllowedEffect;
+            }
+
+            Point localPoint = listLocalFiles.PointToClient(Cursor.Position);
+            ListViewItem item = listLocalFiles.GetItemAt(localPoint.X, localPoint.Y);
+
+            if(item != null)
+            {                           
+                item.Selected = true;
             }
         }
 
-        private bool cancel = false;
-        private void onCancelClick(object sender, EventArgs e)
+        private void onLocalRightClick(object sender, MouseEventArgs e)
         {
-            cancel = !cancel;
-            downloading = false;
+            if (e.Button == MouseButtons.Right)
+            {
+                contextMenuLocal.Show(Cursor.Position);
+            }
         }
 
-        private void onClearClick(object sender, EventArgs e)
+        private void onContextMenuLocalClick(object sender, ToolStripItemClickedEventArgs e)
         {
-            foreach (ListViewItem item in listDownloads.Items)
+            if (e.ClickedItem.Text == "Refresh")
             {
-                string fileName = item.SubItems[0].Text;
-                string status = item.SubItems[1].Text;
+                SearchLocal(textBoxDest.Text);
+            }
+            else if (e.ClickedItem.Text == "Delete")
+            {
+                contextMenuLocal.Close();
+                DialogResult result = MessageBox.Show("Are you sure you want to delete?", "Delete Files/Folders", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
-                if (status.StartsWith("Queued") || status.StartsWith("Complete") || status.StartsWith("Error:") || status.StartsWith("Cancelled") || status.StartsWith("Skipped"))
+                if (result == DialogResult.No)
                 {
-                    if (item.SubItems[1].Text.StartsWith("Queued"))
+                    return;
+                }
+                else if (result == DialogResult.Yes)
+                {
+                    foreach (ListViewItem item in listLocalFiles.SelectedItems)
                     {
-                        queue.TryTake(out fileName);
+                        DirectoryInfo directory = new DirectoryInfo(textBoxDest.Text + @"\" + item.SubItems[0].Text);
+
+                        if(directory.Exists)
+                        {
+                            directory.Delete();
+                        } else
+                        {
+                            FileInfo file = new FileInfo(textBoxDest.Text + @"\" + item.SubItems[0].Text);
+
+                            if (file.Exists)
+                            {
+                                file.Delete();
+                            }
+                        }
                     }
 
-                    listDownloads.Items.Remove(item);
+                    SearchLocal(textBoxDest.Text);
+                }
+            }
+            else if (e.ClickedItem.Text == "New Folder")
+            {
+                NameDialog dialog = new NameDialog();
+                Program.CenterToScreen(dialog);
+                DialogResult result = dialog.ShowDialog();
+
+                if(result == DialogResult.OK)
+                {
+                    string name = dialog.getName();
+
+                    new DirectoryInfo(textBoxDest.Text + @"\" + name).Create();
+
+                    SearchLocal(textBoxDest.Text);
+                }
+            }
+        }
+
+        private void onDownloadsRightClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                contextMenuDownloads.Show(Cursor.Position);
+            }
+        }
+
+        private void onContextMenuDownloadsClick(object sender, ToolStripItemClickedEventArgs e)
+        {
+            if (e.ClickedItem.Text == "Remove")
+            {
+                foreach (ListViewItem file in listDownloads.SelectedItems)
+                {
+                    string next;
+                    string status = file.SubItems[1].Text;
+
+                    if (status.StartsWith("Queued") || status.StartsWith("Complete") || status.StartsWith("Error:") || status.StartsWith("Skipped"))
+                    {
+                        if (file.SubItems[1].Text.StartsWith("Queued"))
+                        {
+                            queue.TryTake(out next);
+                        }
+
+                        listDownloads.Items.Remove(file);
+                    }
+                }
+            }
+            else if (e.ClickedItem.Text == "Clear")
+            {
+                foreach (ListViewItem item in listDownloads.Items)
+                {
+                    string next;
+                    string status = item.SubItems[1].Text;
+
+                    if (status.StartsWith("Queued") || status.StartsWith("Complete") || status.StartsWith("Error:") || status.StartsWith("Skipped"))
+                    {
+                        if (item.SubItems[1].Text.StartsWith("Queued"))
+                        {
+                            queue.TryTake(out next);
+                        }
+
+                        listDownloads.Items.Remove(item);
+                    }
+                }
+            }
+            else if (e.ClickedItem.Text == "Cancel Downloads")
+            {
+                cancel = !cancel;
+                downloading = false;
+            }
+            else if (e.ClickedItem.Text == "Start Downloads")
+            {
+                if (!downloading)
+                {
+                    DownloadFiles();
                 }
             }
         }
@@ -529,6 +503,8 @@ namespace rClone_Downloader
 
             folders.Clear();
             files.Clear();
+
+            textBoxSource.Text = source;
 
             string error = null;
 
@@ -586,14 +562,12 @@ namespace rClone_Downloader
             return error;
         }
 
-        private async void Search()
+        private async void SearchRClone()
         {
             Write("Searching...");
 
             drivesList.Enabled = false;
-            textBoxSource.Enabled = false;
             textBoxFilter.Enabled = false;
-            buttonBack.Enabled = false;
             buttonGo.Enabled = false;
 
             listFiles.Items.Clear();
@@ -606,6 +580,15 @@ namespace rClone_Downloader
             }
             else
             {
+                ListViewItem back = new ListViewItem("..");
+
+                back.SubItems.Add("");
+                back.SubItems.Add("");
+                back.ImageIndex = 3;
+
+                listFiles.Items.Add(back);
+
+                double total = 0;
                 foreach (string line in folders)
                 {
                     string[] split = line.Split('|');
@@ -624,27 +607,7 @@ namespace rClone_Downloader
                     string date = split[1];
                     DateTime dateTime = DateTime.ParseExact(date, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
                     double sizeDouble = Int64.Parse(split[0]);
-                    string size;
-
-                    if(sizeDouble < 1024)
-                    {
-                        size = sizeDouble + " B";
-                    } else if(sizeDouble < 1048576)
-                    {
-                        size = Math.Round(sizeDouble / 1024, 2) + " KB";
-                    }
-                    else if (sizeDouble < 1073741824)
-                    {
-                        size = Math.Round(sizeDouble / 1048576, 2) + " MB";
-                    }
-                    else if (sizeDouble < 1099511627776)
-                    {
-                        size = Math.Round(sizeDouble / 1073741824, 2) + " GB";
-                    }
-                    else
-                    {
-                        size = sizeDouble.ToString();
-                    }
+                    string size = getSize(sizeDouble);
 
                     ListViewItem item = new ListViewItem(split[2]);
                     item.SubItems.Add(dateTime.ToString("MM/dd/yyyy hh:mm tt"));
@@ -652,16 +615,112 @@ namespace rClone_Downloader
                     item.ImageIndex = 0;
 
                     listFiles.Items.Add(item);
+
+                    total = total+ sizeDouble;
                 }
 
-                Write("Folders: " + folders.Count + "    Files: " + listFiles.Items.Count);
+                Write("Folders: " + folders.Count + "    Files: " + listFiles.Items.Count + "    Total: " + getSize(total));
             }
 
             drivesList.Enabled = true;
-            textBoxSource.Enabled = true;
             textBoxFilter.Enabled = true;
-            buttonBack.Enabled = true;
             buttonGo.Enabled = true;
+
+            listFiles.Focus();
+            listFiles.Items[1].Selected = true;
+        }
+
+        private void SearchLocal(string selectedDirectory)
+        {
+            listLocalFiles.Items.Clear();
+
+            string[] split = textBoxDest.Text.Split('\\');
+
+            if (selectedDirectory == ".." && split.Length == 2 && split[1] == "")
+            {
+                foreach (var dDrive in DriveInfo.GetDrives())
+                {
+                    ListViewItem drive1 = new ListViewItem(dDrive.Name.Trim());
+
+                    drive1.SubItems.Add("");
+                    drive1.SubItems.Add(getSize(dDrive.TotalSize));
+                    drive1.ImageIndex = 2;
+
+                    listLocalFiles.Items.Add(drive1);
+                }
+
+                textBoxDest.Text = "..";
+
+                Properties.Settings.Default.Destination = textBoxDest.Text;
+                Properties.Settings.Default.Save();
+
+                return;
+            }
+
+            if (selectedDirectory == "..")
+            {
+                DirectoryInfo parentDirectory = new DirectoryInfo(textBoxDest.Text).Parent;
+
+                selectedDirectory = parentDirectory.FullName;
+            }
+            else
+            {
+                if (textBoxDest.Text != "..")
+                {
+                    if (selectedDirectory != textBoxDest.Text)
+                    {
+                        selectedDirectory = textBoxDest.Text + selectedDirectory + @"\";
+                    }
+                }
+            }
+
+            textBoxDest.Text = selectedDirectory;
+
+            Properties.Settings.Default.Destination = textBoxDest.Text;
+            Properties.Settings.Default.Save();
+
+            ListViewItem back = new ListViewItem("..");
+
+            back.SubItems.Add("");
+            back.SubItems.Add("");
+            back.ImageIndex = 3;
+
+            listLocalFiles.Items.Add(back);
+
+            foreach (string file in Directory.GetDirectories(selectedDirectory))
+            {
+                DirectoryInfo directory = new DirectoryInfo(file);
+
+                if (directory.Attributes.HasFlag(FileAttributes.Hidden))
+                {
+                    continue;
+                }
+
+                ListViewItem item1 = new ListViewItem(directory.Name);
+                item1.SubItems.Add(directory.LastWriteTime.ToString("MM/dd/yyyy hh:mm tt"));
+                item1.SubItems.Add("");
+                item1.ImageIndex = 1;
+
+                listLocalFiles.Items.Add(item1);
+            }
+
+            foreach (string file in Directory.GetFiles(selectedDirectory))
+            {
+
+                FileInfo fileInfo = new FileInfo(file);
+
+                if (fileInfo.Attributes.HasFlag(FileAttributes.Hidden))
+                {
+                    continue;
+                }
+
+                ListViewItem item1 = new ListViewItem(fileInfo.Name);
+                item1.SubItems.Add(fileInfo.LastWriteTime.ToString("MM/dd/yyyy hh:mm tt"));
+                item1.SubItems.Add(getSize(fileInfo.Length));
+                item1.ImageIndex = 0;
+
+                listLocalFiles.Items.Add(item1);
+            }
         }
 
         private async Task<string> Download(string name, string destination)
@@ -671,8 +730,6 @@ namespace rClone_Downloader
             await Task.Run(() =>
             {
                 string[] split = name.Split('/');
-
-                destination = destination + @"\" + split[split.Length - 1];
 
                 if(File.Exists(destination))
                 {
@@ -717,7 +774,7 @@ namespace rClone_Downloader
                     }
                 };
 
-                downloadProcess.OutputDataReceived += (Object _sender, DataReceivedEventArgs _args) => ProcessOutput(_sender, _args, name);
+                downloadProcess.OutputDataReceived += (Object _sender, DataReceivedEventArgs _args) => ProcessOutput(_sender, _args, name + " >> " + destination);
                 downloadProcess.Start();
                 downloadProcess.BeginOutputReadLine();
 
@@ -739,7 +796,7 @@ namespace rClone_Downloader
             return error;
         }
 
-        private async void DownloadFiles(string destination)
+        private async void DownloadFiles()
         {
             if(downloading)
             {
@@ -757,14 +814,18 @@ namespace rClone_Downloader
                     return;
                 }
 
-                string fileName = queue.Take();
+                string next = queue.Take();
+                string fileName = next.Split(';')[0];
+                string destination = next.Split(';')[1];
 
-                if(listDownloads.FindItemWithText(fileName) == null)
+                ListViewItem item = listDownloads.FindItemWithText(next.Replace(";", " >> "));
+
+                if (item == null)
                 {
                     continue;
                 }
 
-                UpdateListViewItem(fileName, "Initializing", "", "", "");
+                UpdateListViewItem(next.Replace(";", " >> "), "Initializing", "", "", "");
 
                 string error = await Download(fileName, destination);
 
@@ -772,67 +833,38 @@ namespace rClone_Downloader
                 {
                     if (error == "Cancel")
                     {
-                        listDownloads.FindItemWithText(fileName).Remove();
+                        item.Remove();
 
-                        ListViewItem item = new ListViewItem(fileName);
-                        item.SubItems.Add("Queued");
-                        item.SubItems.Add("");
-                        item.SubItems.Add("");
-                        item.SubItems.Add("");
-                        listDownloads.Items.Add(item);
+                        ListViewItem item1 = new ListViewItem(next.Replace(";", " >> "));
+                        item1.SubItems.Add("Queued");
+                        item1.SubItems.Add("");
+                        item1.SubItems.Add("");
+                        item1.SubItems.Add("");
+                        listDownloads.Items.Add(item1);
 
-                     // UpdateListViewItem(fileName, "Queued", "", "", "");
-
-                        queue.Add(fileName);
+                        queue.Add(next);
                     }
                     else if (error == "Skipped")
                     {
-                        UpdateListViewItem(fileName, "Skipped" + error);
+                        UpdateListViewItem(next.Replace(";", " >> "), error);
                     }
                     else
                     {
-                        UpdateListViewItem(fileName, "Error: " + error);
+                        UpdateListViewItem(next.Replace(";", " >> "), error);
                     }
                 }
                 else
                 {
-                    UpdateListViewItem(fileName, "Complete");
+                    UpdateListViewItem(next.Replace(";", " >> "), "Complete");
+                    SearchLocal(textBoxDest.Text);
                 }
             }
 
             downloading = false;
         }
 
-        private void ProcessOutput(object sendingProcess, DataReceivedEventArgs outLine, string fileName)
-        {
-            if (!String.IsNullOrEmpty(outLine.Data))
-            {
-                if (outLine.Data.StartsWith(" *"))
-                {
-                    if (cancel)
-                    {
-                        Process process = sendingProcess as Process;
-
-                        try
-                        {
-                            process.Kill();
-                        }
-                        catch { }     
-                    } else
-                    {
-                        string[] split = outLine.Data.Replace("*", "").TrimStart().Split(':');
-                        string stats = split[2].TrimStart();
-                        string[] split2 = stats.Split(',');
-
-                        UpdateListViewItem(fileName, "Downloading", split2[0].TrimStart(), split2[2].TrimStart(), split2[3].Replace(" ETA ", ""));
-                    }
-                }
-            }
-        }
-
         private void UpdateListViewItem(string fileName, string status, string progress, string speed, string eta)
         {
-
             if (this.listDownloads.InvokeRequired)
             {
                 this.BeginInvoke(new MethodInvoker(() => {
@@ -871,6 +903,90 @@ namespace rClone_Downloader
             }
         }
 
+        private void onClosing(object sender, FormClosingEventArgs e)
+        {
+            if (listProcess != null)
+            {
+                listProcess.Close();
+            }
+            if (downloadProcess != null)
+            {
+                downloadProcess.Close();
+            }
+        }
+
+        private void ProcessOutput(object sendingProcess, DataReceivedEventArgs outLine, string fileName)
+        {
+            if (!String.IsNullOrEmpty(outLine.Data))
+            {
+                if (outLine.Data.StartsWith(" *"))
+                {
+                    if (cancel)
+                    {
+                        Process process = sendingProcess as Process;
+
+                        try
+                        {
+                            process.Kill();
+                        }
+                        catch { }
+                    }
+                    else
+                    {
+                        string[] split = outLine.Data.Replace("*", "").TrimStart().Split(':');
+                        string stats = split[2].TrimStart();
+                        string[] split2 = stats.Split(',');
+
+                        UpdateListViewItem(fileName, "Downloading", split2[0].TrimStart(), split2[2].TrimStart(), split2[3].Replace(" ETA ", ""));
+                    }
+                }
+            }
+        }
+
+        private bool ItemExists(string source, string fileName, string destination)
+        {
+            foreach (ListViewItem item in listDownloads.Items)
+            {
+                if (item.SubItems[0].Text == source + " >> " + destination + @"\" + fileName)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private string getSize(double sizeDouble)
+        {
+            String size;
+            if (sizeDouble < 1024)
+            {
+                size = sizeDouble + " B";
+            }
+            else if (sizeDouble < 1048576)
+            {
+                size = Math.Round(sizeDouble / 1024, 2) + " KB";
+            }
+            else if (sizeDouble < 1073741824)
+            {
+                size = Math.Round(sizeDouble / 1048576, 2) + " MB";
+            }
+            else if (sizeDouble < 1099511627776)
+            {
+                size = Math.Round(sizeDouble / 1073741824, 2) + " GB";
+            }
+            else if (sizeDouble < 1125899906842624)
+            {
+                size = Math.Round(sizeDouble / 1099511627776, 2) + " TB";
+            }
+            else
+            {
+                size = sizeDouble.ToString();
+            }
+
+            return size;
+        }
+
         private void Write(string text)
         {
             if (this.log.InvokeRequired)
@@ -883,15 +999,24 @@ namespace rClone_Downloader
             }
         }
 
-        private void onClosing(object sender, FormClosingEventArgs e)
+        private void onKeyDown(object sender, KeyEventArgs e)
         {
-            if(listProcess != null)
+            if(e.KeyData == (Keys.A | Keys.Control))
             {
-                listProcess.Close();
-            }
-            if (downloadProcess != null)
-            {
-                downloadProcess.Close();
+                listFiles.BeginUpdate();
+
+                for (int i = 0; i < listFiles.Items.Count; i++)
+                {
+                    foreach (ListViewItem item in listFiles.Items)
+                    {
+                        if(item.ImageIndex != 3)
+                        {
+                            item.Selected = true;
+                        }                       
+                    }
+                }
+                e.SuppressKeyPress = true;
+                listFiles.EndUpdate();
             }
         }
     }

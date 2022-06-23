@@ -1,7 +1,7 @@
 ﻿
 namespace rClone_Downloader
 {
-    partial class MainUI
+    partial class MainUI2
     {
         /// <summary>
         /// Required designer variable.
@@ -30,7 +30,8 @@ namespace rClone_Downloader
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainUI));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainUI2));
+            this.buttonBack = new System.Windows.Forms.Button();
             this.textBoxSource = new System.Windows.Forms.TextBox();
             this.buttonGo = new System.Windows.Forms.Button();
             this.textBoxFilter = new System.Windows.Forms.TextBox();
@@ -51,29 +52,21 @@ namespace rClone_Downloader
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader7 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader8 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.contextMenuDownloads = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.cancelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.startStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.drivesList = new System.Windows.Forms.ComboBox();
+            this.buttonCancel = new System.Windows.Forms.Button();
+            this.buttonDownload = new System.Windows.Forms.Button();
             this.containerMain = new System.Windows.Forms.SplitContainer();
             this.panel3 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.listLocalFiles = new System.Windows.Forms.ListView();
+            this.listView1 = new System.Windows.Forms.ListView();
             this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader9 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader11 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.contextMenuLocal = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.refreshToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel4 = new System.Windows.Forms.Panel();
             this.panel1 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
-            this.newFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panelLog.SuspendLayout();
-            this.contextMenuDownloads.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.containerMain)).BeginInit();
             this.containerMain.Panel1.SuspendLayout();
             this.containerMain.Panel2.SuspendLayout();
@@ -84,32 +77,46 @@ namespace rClone_Downloader
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
-            this.contextMenuLocal.SuspendLayout();
             this.panel4.SuspendLayout();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // buttonBack
+            // 
+            this.buttonBack.Location = new System.Drawing.Point(3, 2);
+            this.buttonBack.Name = "buttonBack";
+            this.buttonBack.Size = new System.Drawing.Size(27, 22);
+            this.buttonBack.TabIndex = 0;
+            this.buttonBack.Text = "<<";
+            this.buttonBack.UseVisualStyleBackColor = true;
+            this.buttonBack.Click += new System.EventHandler(this.onButtonBack);
             // 
             // textBoxSource
             // 
             this.textBoxSource.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxSource.Enabled = false;
             this.textBoxSource.ForeColor = System.Drawing.Color.Gray;
-            this.textBoxSource.Location = new System.Drawing.Point(87, 4);
+            this.textBoxSource.Location = new System.Drawing.Point(121, 3);
             this.textBoxSource.Name = "textBoxSource";
-            this.textBoxSource.Size = new System.Drawing.Size(480, 20);
+            this.textBoxSource.Size = new System.Drawing.Size(446, 20);
             this.textBoxSource.TabIndex = 2;
+            this.textBoxSource.Text = "Source";
+            this.textBoxSource.Click += new System.EventHandler(this.onTextDestChange);
+            this.textBoxSource.TextChanged += new System.EventHandler(this.onTextSourceChange);
+            this.textBoxSource.Enter += new System.EventHandler(this.onTextSourceEnter);
+            this.textBoxSource.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.onTextSourceKey);
+            this.textBoxSource.Leave += new System.EventHandler(this.onTextSourceLeave);
             // 
             // buttonGo
             // 
             this.buttonGo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonGo.Location = new System.Drawing.Point(492, 31);
+            this.buttonGo.Location = new System.Drawing.Point(492, 29);
             this.buttonGo.Name = "buttonGo";
-            this.buttonGo.Size = new System.Drawing.Size(75, 21);
+            this.buttonGo.Size = new System.Drawing.Size(75, 23);
             this.buttonGo.TabIndex = 4;
-            this.buttonGo.Text = "Search";
+            this.buttonGo.Text = "Go";
             this.buttonGo.UseVisualStyleBackColor = true;
-            this.buttonGo.Click += new System.EventHandler(this.onButtonSearch);
+            this.buttonGo.Click += new System.EventHandler(this.onButtonGo);
             // 
             // textBoxFilter
             // 
@@ -132,10 +139,13 @@ namespace rClone_Downloader
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxDest.Enabled = false;
             this.textBoxDest.ForeColor = System.Drawing.Color.Gray;
-            this.textBoxDest.Location = new System.Drawing.Point(3, 4);
+            this.textBoxDest.Location = new System.Drawing.Point(3, 3);
             this.textBoxDest.Name = "textBoxDest";
-            this.textBoxDest.Size = new System.Drawing.Size(564, 20);
+            this.textBoxDest.Size = new System.Drawing.Size(403, 20);
             this.textBoxDest.TabIndex = 5;
+            this.textBoxDest.TextChanged += new System.EventHandler(this.onTextDestChange);
+            this.textBoxDest.Enter += new System.EventHandler(this.onTextDestEnter);
+            this.textBoxDest.Leave += new System.EventHandler(this.onTextDestLeave);
             // 
             // panelLog
             // 
@@ -179,9 +189,10 @@ namespace rClone_Downloader
             // 
             this.radioOverwrite.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.radioOverwrite.AutoSize = true;
-            this.radioOverwrite.Location = new System.Drawing.Point(81, 2);
+            this.radioOverwrite.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.radioOverwrite.Location = new System.Drawing.Point(82, 2);
             this.radioOverwrite.Name = "radioOverwrite";
-            this.radioOverwrite.Size = new System.Drawing.Size(70, 17);
+            this.radioOverwrite.Size = new System.Drawing.Size(69, 17);
             this.radioOverwrite.TabIndex = 12;
             this.radioOverwrite.TabStop = true;
             this.radioOverwrite.Text = "Overwrite";
@@ -221,14 +232,14 @@ namespace rClone_Downloader
             this.listFiles.TabStop = false;
             this.listFiles.UseCompatibleStateImageBehavior = false;
             this.listFiles.View = System.Windows.Forms.View.Details;
+            this.listFiles.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.onListChange);
             this.listFiles.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.onDrag);
-            this.listFiles.DoubleClick += new System.EventHandler(this.onListrCloneDoubleClick);
-            this.listFiles.KeyDown += new System.Windows.Forms.KeyEventHandler(this.onKeyDown);
+            this.listFiles.DoubleClick += new System.EventHandler(this.onListClick);
             // 
             // columnHeader3
             // 
             this.columnHeader3.Text = "Name";
-            this.columnHeader3.Width = 367;
+            this.columnHeader3.Width = 382;
             // 
             // columnHeader10
             // 
@@ -251,6 +262,7 @@ namespace rClone_Downloader
             // 
             // listDownloads
             // 
+            this.listDownloads.AllowDrop = true;
             this.listDownloads.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.listDownloads.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
@@ -258,7 +270,6 @@ namespace rClone_Downloader
             this.columnHeader5,
             this.columnHeader7,
             this.columnHeader8});
-            this.listDownloads.ContextMenuStrip = this.contextMenuDownloads;
             this.listDownloads.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listDownloads.GridLines = true;
             this.listDownloads.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
@@ -266,17 +277,19 @@ namespace rClone_Downloader
             this.listDownloads.Location = new System.Drawing.Point(0, 0);
             this.listDownloads.Margin = new System.Windows.Forms.Padding(0);
             this.listDownloads.Name = "listDownloads";
-            this.listDownloads.Size = new System.Drawing.Size(571, 267);
+            this.listDownloads.Size = new System.Drawing.Size(571, 265);
             this.listDownloads.TabIndex = 0;
             this.listDownloads.TabStop = false;
             this.listDownloads.UseCompatibleStateImageBehavior = false;
             this.listDownloads.View = System.Windows.Forms.View.Details;
-            this.listDownloads.MouseClick += new System.Windows.Forms.MouseEventHandler(this.onDownloadsRightClick);
+            this.listDownloads.Click += new System.EventHandler(this.onRightClick);
+            this.listDownloads.DragDrop += new System.Windows.Forms.DragEventHandler(this.onDragDrop);
+            this.listDownloads.DragOver += new System.Windows.Forms.DragEventHandler(this.onDragOver);
             // 
             // columnHeader1
             // 
-            this.columnHeader1.Text = "Source";
-            this.columnHeader1.Width = 104;
+            this.columnHeader1.Text = "Name";
+            this.columnHeader1.Width = 203;
             // 
             // columnHeader2
             // 
@@ -298,51 +311,39 @@ namespace rClone_Downloader
             this.columnHeader8.Text = "ETA";
             this.columnHeader8.Width = 74;
             // 
-            // contextMenuDownloads
-            // 
-            this.contextMenuDownloads.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.removeToolStripMenuItem,
-            this.clearToolStripMenuItem,
-            this.cancelToolStripMenuItem,
-            this.startStripMenuItem1});
-            this.contextMenuDownloads.Name = "contextMenuStrip1";
-            this.contextMenuDownloads.Size = new System.Drawing.Size(173, 92);
-            this.contextMenuDownloads.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.onContextMenuDownloadsClick);
-            // 
-            // removeToolStripMenuItem
-            // 
-            this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            this.removeToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
-            this.removeToolStripMenuItem.Text = "Remove";
-            // 
-            // clearToolStripMenuItem
-            // 
-            this.clearToolStripMenuItem.Name = "clearToolStripMenuItem";
-            this.clearToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
-            this.clearToolStripMenuItem.Text = "Clear";
-            // 
-            // cancelToolStripMenuItem
-            // 
-            this.cancelToolStripMenuItem.Name = "cancelToolStripMenuItem";
-            this.cancelToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
-            this.cancelToolStripMenuItem.Text = "Cancel Downloads";
-            // 
-            // startStripMenuItem1
-            // 
-            this.startStripMenuItem1.Name = "startStripMenuItem1";
-            this.startStripMenuItem1.Size = new System.Drawing.Size(172, 22);
-            this.startStripMenuItem1.Text = "Start Downloads";
-            // 
             // drivesList
             // 
             this.drivesList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.drivesList.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.drivesList.FormattingEnabled = true;
-            this.drivesList.Location = new System.Drawing.Point(3, 4);
+            this.drivesList.Location = new System.Drawing.Point(37, 4);
             this.drivesList.Name = "drivesList";
             this.drivesList.Size = new System.Drawing.Size(78, 21);
             this.drivesList.Sorted = true;
             this.drivesList.TabIndex = 1;
+            // 
+            // buttonCancel
+            // 
+            this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonCancel.Location = new System.Drawing.Point(412, 3);
+            this.buttonCancel.Name = "buttonCancel";
+            this.buttonCancel.Size = new System.Drawing.Size(75, 22);
+            this.buttonCancel.TabIndex = 10;
+            this.buttonCancel.Text = "Cancel";
+            this.buttonCancel.UseVisualStyleBackColor = true;
+            this.buttonCancel.Click += new System.EventHandler(this.onCancelClick);
+            // 
+            // buttonDownload
+            // 
+            this.buttonDownload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonDownload.Enabled = false;
+            this.buttonDownload.Location = new System.Drawing.Point(492, 3);
+            this.buttonDownload.Name = "buttonDownload";
+            this.buttonDownload.Size = new System.Drawing.Size(75, 22);
+            this.buttonDownload.TabIndex = 11;
+            this.buttonDownload.Text = "Download";
+            this.buttonDownload.UseVisualStyleBackColor = true;
+            this.buttonDownload.Click += new System.EventHandler(this.onButtonDownload);
             // 
             // containerMain
             // 
@@ -387,6 +388,7 @@ namespace rClone_Downloader
             this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel2.Controls.Add(this.buttonGo);
+            this.panel2.Controls.Add(this.buttonBack);
             this.panel2.Controls.Add(this.textBoxFilter);
             this.panel2.Controls.Add(this.drivesList);
             this.panel2.Controls.Add(this.textBoxSource);
@@ -398,9 +400,6 @@ namespace rClone_Downloader
             // 
             // splitContainer1
             // 
-            this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.splitContainer1.Location = new System.Drawing.Point(0, 30);
             this.splitContainer1.Margin = new System.Windows.Forms.Padding(0);
             this.splitContainer1.Name = "splitContainer1";
@@ -408,38 +407,33 @@ namespace rClone_Downloader
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.listLocalFiles);
+            this.splitContainer1.Panel1.Controls.Add(this.listView1);
             // 
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.listDownloads);
             this.splitContainer1.Size = new System.Drawing.Size(571, 495);
-            this.splitContainer1.SplitterDistance = 224;
+            this.splitContainer1.SplitterDistance = 226;
             this.splitContainer1.TabIndex = 15;
             // 
-            // listLocalFiles
+            // listView1
             // 
-            this.listLocalFiles.AllowDrop = true;
-            this.listLocalFiles.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader6,
             this.columnHeader9,
             this.columnHeader11});
-            this.listLocalFiles.ContextMenuStrip = this.contextMenuLocal;
-            this.listLocalFiles.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listLocalFiles.GridLines = true;
-            this.listLocalFiles.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.listLocalFiles.HideSelection = false;
-            this.listLocalFiles.Location = new System.Drawing.Point(0, 0);
-            this.listLocalFiles.Name = "listLocalFiles";
-            this.listLocalFiles.Size = new System.Drawing.Size(571, 224);
-            this.listLocalFiles.SmallImageList = this.imageList1;
-            this.listLocalFiles.TabIndex = 0;
-            this.listLocalFiles.UseCompatibleStateImageBehavior = false;
-            this.listLocalFiles.View = System.Windows.Forms.View.Details;
-            this.listLocalFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.onDragDrop);
-            this.listLocalFiles.DragOver += new System.Windows.Forms.DragEventHandler(this.onDragOver);
-            this.listLocalFiles.DoubleClick += new System.EventHandler(this.onListLocalDoubleClick);
-            this.listLocalFiles.MouseClick += new System.Windows.Forms.MouseEventHandler(this.onLocalRightClick);
+            this.listView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listView1.GridLines = true;
+            this.listView1.HideSelection = false;
+            this.listView1.Location = new System.Drawing.Point(0, 0);
+            this.listView1.MultiSelect = false;
+            this.listView1.Name = "listView1";
+            this.listView1.Size = new System.Drawing.Size(571, 226);
+            this.listView1.SmallImageList = this.imageList1;
+            this.listView1.TabIndex = 0;
+            this.listView1.UseCompatibleStateImageBehavior = false;
+            this.listView1.View = System.Windows.Forms.View.Details;
+            this.listView1.DoubleClick += new System.EventHandler(this.onFileExplorerDoubleClick);
             // 
             // columnHeader6
             // 
@@ -456,33 +450,13 @@ namespace rClone_Downloader
             this.columnHeader11.Text = "Size";
             this.columnHeader11.Width = 80;
             // 
-            // contextMenuLocal
-            // 
-            this.contextMenuLocal.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.refreshToolStripMenuItem,
-            this.deleteToolStripMenuItem,
-            this.newFolderToolStripMenuItem});
-            this.contextMenuLocal.Name = "contextMenuStrip1";
-            this.contextMenuLocal.Size = new System.Drawing.Size(135, 70);
-            this.contextMenuLocal.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.onContextMenuLocalClick);
-            // 
-            // refreshToolStripMenuItem
-            // 
-            this.refreshToolStripMenuItem.Name = "refreshToolStripMenuItem";
-            this.refreshToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.refreshToolStripMenuItem.Text = "Refresh";
-            // 
-            // deleteToolStripMenuItem
-            // 
-            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.deleteToolStripMenuItem.Text = "Delete";
-            // 
             // panel4
             // 
             this.panel4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel4.Controls.Add(this.textBoxDest);
+            this.panel4.Controls.Add(this.buttonCancel);
+            this.panel4.Controls.Add(this.buttonDownload);
             this.panel4.Location = new System.Drawing.Point(0, 0);
             this.panel4.Margin = new System.Windows.Forms.Padding(0);
             this.panel4.Name = "panel4";
@@ -511,13 +485,7 @@ namespace rClone_Downloader
             this.label1.TabIndex = 0;
             this.label1.Text = "Copy Action:";
             // 
-            // newFolderToolStripMenuItem
-            // 
-            this.newFolderToolStripMenuItem.Name = "newFolderToolStripMenuItem";
-            this.newFolderToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.newFolderToolStripMenuItem.Text = "New Folder";
-            // 
-            // MainUI
+            // MainUI2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -527,13 +495,12 @@ namespace rClone_Downloader
             this.Controls.Add(this.panelLog);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(850, 600);
-            this.Name = "MainUI";
+            this.Name = "MainUI2";
             this.Padding = new System.Windows.Forms.Padding(5);
             this.Text = "rClone Downloader";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.onClosing);
             this.panelLog.ResumeLayout(false);
             this.panelLog.PerformLayout();
-            this.contextMenuDownloads.ResumeLayout(false);
             this.containerMain.Panel1.ResumeLayout(false);
             this.containerMain.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.containerMain)).EndInit();
@@ -545,7 +512,6 @@ namespace rClone_Downloader
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
-            this.contextMenuLocal.ResumeLayout(false);
             this.panel4.ResumeLayout(false);
             this.panel4.PerformLayout();
             this.panel1.ResumeLayout(false);
@@ -559,7 +525,9 @@ namespace rClone_Downloader
         private System.Windows.Forms.TextBox textBoxFilter;
         private System.Windows.Forms.Button buttonGo;
         private System.Windows.Forms.TextBox textBoxSource;
+        private System.Windows.Forms.Button buttonBack;
         private System.Windows.Forms.Panel panelLog;
+        private System.Windows.Forms.Button buttonDownload;
         private System.Windows.Forms.ListView listDownloads;
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
@@ -571,6 +539,7 @@ namespace rClone_Downloader
         private System.Windows.Forms.ColumnHeader columnHeader8;
         private System.Windows.Forms.ComboBox drivesList;
         private System.Windows.Forms.SplitContainer containerMain;
+        private System.Windows.Forms.Button buttonCancel;
         private System.Windows.Forms.RadioButton radioPrompt;
         private System.Windows.Forms.RadioButton radioOverwrite;
         private System.Windows.Forms.RadioButton radioSkip;
@@ -582,20 +551,11 @@ namespace rClone_Downloader
         private System.Windows.Forms.Panel panel4;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.Label log;
-        private System.Windows.Forms.ListView listLocalFiles;
+        private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.ColumnHeader columnHeader6;
         private System.Windows.Forms.ColumnHeader columnHeader9;
         private System.Windows.Forms.ColumnHeader columnHeader11;
         private System.Windows.Forms.SplitContainer splitContainer1;
-        private System.Windows.Forms.ContextMenuStrip contextMenuDownloads;
-        private System.Windows.Forms.ToolStripMenuItem removeToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem clearToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem cancelToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem startStripMenuItem1;
-        private System.Windows.Forms.ContextMenuStrip contextMenuLocal;
-        private System.Windows.Forms.ToolStripMenuItem refreshToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem newFolderToolStripMenuItem;
     }
 }
 

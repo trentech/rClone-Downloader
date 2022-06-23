@@ -18,13 +18,13 @@ namespace rClone_Downloader
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            if (!File.Exists("C:\\rclone\\rclone.exe"))
+            if (!File.Exists(@"C:\rclone\rclone.exe"))
             {
                 MessageBox.Show("rClone needs to be installed to C:\rclone", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            if(!File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\rclone\\rclone.conf"))
+            if(!File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\rclone\rclone.conf"))
             {
                 MessageBox.Show("rClone has not been setup", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
