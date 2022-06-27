@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -10,7 +13,7 @@ namespace rClone_Downloader
 {
     static class Program
     {
-        public static MainUI mainUI { get; private set; }
+        public static MainUI mainUI { get; set; }
 
         [STAThread]
         static void Main()
@@ -18,47 +21,38 @@ namespace rClone_Downloader
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            if (!File.Exists(@"C:\rclone\rclone.exe"))
+            string directory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string rClone = directory + @"\rClone\rclone.exe";
+
+            if (!File.Exists(rClone))
             {
-                MessageBox.Show("rClone needs to be installed to C:\rclone", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                rCloneDownload rCloneDownload = new rCloneDownload();
 
-            if(!File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\rclone\rclone.conf"))
-            {
-                MessageBox.Show("rClone has not been setup", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                CenterToScreen(rCloneDownload);
 
-            if (Properties.Settings.Default.Path == "")
-            {
-                OpenFileDialog fileDialog = new OpenFileDialog();
+                Application.Run(rCloneDownload);
 
-                fileDialog.Filter = "Application|rclone.exe";
-                fileDialog.Multiselect = false;
-                fileDialog.DefaultExt = ".exe";
-                fileDialog.CheckPathExists = true;
-                fileDialog.InitialDirectory = @"C:\";
-
-                if (fileDialog.ShowDialog() == DialogResult.OK)
+                if (!File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\rclone\rclone.conf"))
                 {
-                    Properties.Settings.Default.Path = fileDialog.FileName;
-                    Properties.Settings.Default.Save();
+                    // NEED A WAY TO ALLOW USERS TO CONFIGURE RCLONE...
+                    MessageBox.Show("rClone has not been setup", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
                 }
-                else
+            } else
+            {
+                if (!File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\rclone\rclone.conf"))
                 {
-                    fileDialog.Dispose();
+                    // NEED A WAY TO ALLOW USERS TO CONFIGURE RCLONE...
+                    MessageBox.Show("rClone has not been setup", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
-                fileDialog.Dispose();
+                mainUI = new MainUI(rClone);
+
+                CenterToScreen(mainUI);
+
+                Application.Run(mainUI);
             }
-
-            mainUI = new MainUI();
-
-            CenterToScreen(mainUI);
-
-            Application.Run(mainUI);
         }
 
         public static void CenterToScreen(Form form)

@@ -11,9 +11,6 @@
     <Setting Name="Destination" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="Path" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
     <Setting Name="Action" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>

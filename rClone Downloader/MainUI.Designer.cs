@@ -57,10 +57,8 @@ namespace rClone_Downloader
             this.cancelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.drivesList = new System.Windows.Forms.ComboBox();
-            this.containerMain = new System.Windows.Forms.SplitContainer();
             this.panel3 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.listLocalFiles = new System.Windows.Forms.ListView();
             this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader9 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -68,25 +66,31 @@ namespace rClone_Downloader
             this.contextMenuLocal = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.refreshToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel4 = new System.Windows.Forms.Panel();
             this.panel1 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
-            this.newFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.splitContainer3 = new System.Windows.Forms.SplitContainer();
+            this.panel5 = new System.Windows.Forms.Panel();
+            this.columnHeader12 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader13 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.panelLog.SuspendLayout();
             this.contextMenuDownloads.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.containerMain)).BeginInit();
-            this.containerMain.Panel1.SuspendLayout();
-            this.containerMain.Panel2.SuspendLayout();
-            this.containerMain.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
-            this.splitContainer1.Panel1.SuspendLayout();
-            this.splitContainer1.Panel2.SuspendLayout();
-            this.splitContainer1.SuspendLayout();
             this.contextMenuLocal.SuspendLayout();
             this.panel4.SuspendLayout();
             this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
+            this.splitContainer2.Panel1.SuspendLayout();
+            this.splitContainer2.Panel2.SuspendLayout();
+            this.splitContainer2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).BeginInit();
+            this.splitContainer3.Panel1.SuspendLayout();
+            this.splitContainer3.Panel2.SuspendLayout();
+            this.splitContainer3.SuspendLayout();
+            this.panel5.SuspendLayout();
             this.SuspendLayout();
             // 
             // textBoxSource
@@ -95,15 +99,15 @@ namespace rClone_Downloader
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxSource.Enabled = false;
             this.textBoxSource.ForeColor = System.Drawing.Color.Gray;
-            this.textBoxSource.Location = new System.Drawing.Point(87, 4);
+            this.textBoxSource.Location = new System.Drawing.Point(102, 4);
             this.textBoxSource.Name = "textBoxSource";
-            this.textBoxSource.Size = new System.Drawing.Size(480, 20);
+            this.textBoxSource.Size = new System.Drawing.Size(467, 20);
             this.textBoxSource.TabIndex = 2;
             // 
             // buttonGo
             // 
             this.buttonGo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonGo.Location = new System.Drawing.Point(492, 31);
+            this.buttonGo.Location = new System.Drawing.Point(494, 31);
             this.buttonGo.Name = "buttonGo";
             this.buttonGo.Size = new System.Drawing.Size(75, 21);
             this.buttonGo.TabIndex = 4;
@@ -118,7 +122,7 @@ namespace rClone_Downloader
             this.textBoxFilter.ForeColor = System.Drawing.Color.Gray;
             this.textBoxFilter.Location = new System.Drawing.Point(3, 31);
             this.textBoxFilter.Name = "textBoxFilter";
-            this.textBoxFilter.Size = new System.Drawing.Size(483, 20);
+            this.textBoxFilter.Size = new System.Drawing.Size(485, 20);
             this.textBoxFilter.TabIndex = 3;
             this.textBoxFilter.Text = "Filter";
             this.textBoxFilter.TextChanged += new System.EventHandler(this.onTextFilterChange);
@@ -142,7 +146,7 @@ namespace rClone_Downloader
             this.panelLog.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.panelLog.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.panelLog.Controls.Add(this.log);
-            this.panelLog.Location = new System.Drawing.Point(8, 539);
+            this.panelLog.Location = new System.Drawing.Point(8, 587);
             this.panelLog.Margin = new System.Windows.Forms.Padding(0);
             this.panelLog.Name = "panelLog";
             this.panelLog.Size = new System.Drawing.Size(444, 18);
@@ -203,6 +207,7 @@ namespace rClone_Downloader
             // 
             // listFiles
             // 
+            this.listFiles.AllowDrop = true;
             this.listFiles.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.listFiles.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader3,
@@ -215,20 +220,22 @@ namespace rClone_Downloader
             this.listFiles.Location = new System.Drawing.Point(0, 0);
             this.listFiles.Margin = new System.Windows.Forms.Padding(0);
             this.listFiles.Name = "listFiles";
-            this.listFiles.Size = new System.Drawing.Size(570, 466);
+            this.listFiles.Size = new System.Drawing.Size(572, 308);
             this.listFiles.SmallImageList = this.imageList1;
             this.listFiles.TabIndex = 0;
             this.listFiles.TabStop = false;
             this.listFiles.UseCompatibleStateImageBehavior = false;
             this.listFiles.View = System.Windows.Forms.View.Details;
-            this.listFiles.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.onDrag);
+            this.listFiles.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.onDragLocal);
+            this.listFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.onDragDroprClone);
+            this.listFiles.DragOver += new System.Windows.Forms.DragEventHandler(this.onDragOverrClone);
             this.listFiles.DoubleClick += new System.EventHandler(this.onListrCloneDoubleClick);
             this.listFiles.KeyDown += new System.Windows.Forms.KeyEventHandler(this.onKeyDown);
             // 
             // columnHeader3
             // 
             this.columnHeader3.Text = "Name";
-            this.columnHeader3.Width = 367;
+            this.columnHeader3.Width = 365;
             // 
             // columnHeader10
             // 
@@ -257,7 +264,9 @@ namespace rClone_Downloader
             this.columnHeader2,
             this.columnHeader5,
             this.columnHeader7,
-            this.columnHeader8});
+            this.columnHeader8,
+            this.columnHeader12,
+            this.columnHeader13});
             this.listDownloads.ContextMenuStrip = this.contextMenuDownloads;
             this.listDownloads.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listDownloads.GridLines = true;
@@ -266,32 +275,33 @@ namespace rClone_Downloader
             this.listDownloads.Location = new System.Drawing.Point(0, 0);
             this.listDownloads.Margin = new System.Windows.Forms.Padding(0);
             this.listDownloads.Name = "listDownloads";
-            this.listDownloads.Size = new System.Drawing.Size(571, 267);
+            this.listDownloads.Size = new System.Drawing.Size(1150, 196);
             this.listDownloads.TabIndex = 0;
             this.listDownloads.TabStop = false;
             this.listDownloads.UseCompatibleStateImageBehavior = false;
             this.listDownloads.View = System.Windows.Forms.View.Details;
+            this.listDownloads.ColumnWidthChanging += new System.Windows.Forms.ColumnWidthChangingEventHandler(this.onWidthChanging);
             this.listDownloads.MouseClick += new System.Windows.Forms.MouseEventHandler(this.onDownloadsRightClick);
             // 
             // columnHeader1
             // 
-            this.columnHeader1.Text = "Source";
-            this.columnHeader1.Width = 104;
+            this.columnHeader1.Text = "Operation";
+            this.columnHeader1.Width = 735;
             // 
             // columnHeader2
             // 
             this.columnHeader2.Text = "Status";
-            this.columnHeader2.Width = 87;
+            this.columnHeader2.Width = 94;
             // 
             // columnHeader5
             // 
             this.columnHeader5.Text = "Progress";
-            this.columnHeader5.Width = 123;
+            this.columnHeader5.Width = 142;
             // 
             // columnHeader7
             // 
             this.columnHeader7.Text = "Speed";
-            this.columnHeader7.Width = 76;
+            this.columnHeader7.Width = 105;
             // 
             // columnHeader8
             // 
@@ -340,34 +350,9 @@ namespace rClone_Downloader
             this.drivesList.FormattingEnabled = true;
             this.drivesList.Location = new System.Drawing.Point(3, 4);
             this.drivesList.Name = "drivesList";
-            this.drivesList.Size = new System.Drawing.Size(78, 21);
+            this.drivesList.Size = new System.Drawing.Size(93, 21);
             this.drivesList.Sorted = true;
             this.drivesList.TabIndex = 1;
-            // 
-            // containerMain
-            // 
-            this.containerMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.containerMain.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.containerMain.Location = new System.Drawing.Point(8, 8);
-            this.containerMain.Name = "containerMain";
-            // 
-            // containerMain.Panel1
-            // 
-            this.containerMain.Panel1.Controls.Add(this.panel3);
-            this.containerMain.Panel1.Controls.Add(this.panel2);
-            this.containerMain.Panel1MinSize = 410;
-            // 
-            // containerMain.Panel2
-            // 
-            this.containerMain.Panel2.Controls.Add(this.splitContainer1);
-            this.containerMain.Panel2.Controls.Add(this.panel4);
-            this.containerMain.Panel2MinSize = 410;
-            this.containerMain.Size = new System.Drawing.Size(1148, 527);
-            this.containerMain.SplitterDistance = 572;
-            this.containerMain.TabIndex = 0;
-            this.containerMain.TabStop = false;
             // 
             // panel3
             // 
@@ -379,7 +364,7 @@ namespace rClone_Downloader
             this.panel3.Location = new System.Drawing.Point(0, 60);
             this.panel3.Margin = new System.Windows.Forms.Padding(0);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(570, 466);
+            this.panel3.Size = new System.Drawing.Size(572, 308);
             this.panel3.TabIndex = 7;
             // 
             // panel2
@@ -393,33 +378,13 @@ namespace rClone_Downloader
             this.panel2.Location = new System.Drawing.Point(0, 0);
             this.panel2.Margin = new System.Windows.Forms.Padding(0);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(570, 60);
+            this.panel2.Size = new System.Drawing.Size(572, 60);
             this.panel2.TabIndex = 0;
-            // 
-            // splitContainer1
-            // 
-            this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.splitContainer1.Location = new System.Drawing.Point(0, 30);
-            this.splitContainer1.Margin = new System.Windows.Forms.Padding(0);
-            this.splitContainer1.Name = "splitContainer1";
-            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            // 
-            // splitContainer1.Panel1
-            // 
-            this.splitContainer1.Panel1.Controls.Add(this.listLocalFiles);
-            // 
-            // splitContainer1.Panel2
-            // 
-            this.splitContainer1.Panel2.Controls.Add(this.listDownloads);
-            this.splitContainer1.Size = new System.Drawing.Size(571, 495);
-            this.splitContainer1.SplitterDistance = 224;
-            this.splitContainer1.TabIndex = 15;
             // 
             // listLocalFiles
             // 
             this.listLocalFiles.AllowDrop = true;
+            this.listLocalFiles.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.listLocalFiles.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader6,
             this.columnHeader9,
@@ -431,20 +396,21 @@ namespace rClone_Downloader
             this.listLocalFiles.HideSelection = false;
             this.listLocalFiles.Location = new System.Drawing.Point(0, 0);
             this.listLocalFiles.Name = "listLocalFiles";
-            this.listLocalFiles.Size = new System.Drawing.Size(571, 224);
+            this.listLocalFiles.Size = new System.Drawing.Size(570, 308);
             this.listLocalFiles.SmallImageList = this.imageList1;
             this.listLocalFiles.TabIndex = 0;
             this.listLocalFiles.UseCompatibleStateImageBehavior = false;
             this.listLocalFiles.View = System.Windows.Forms.View.Details;
-            this.listLocalFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.onDragDrop);
-            this.listLocalFiles.DragOver += new System.Windows.Forms.DragEventHandler(this.onDragOver);
+            this.listLocalFiles.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.onDragrClone);
+            this.listLocalFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.onDragDropLocal);
+            this.listLocalFiles.DragOver += new System.Windows.Forms.DragEventHandler(this.onDragOverLocal);
             this.listLocalFiles.DoubleClick += new System.EventHandler(this.onListLocalDoubleClick);
             this.listLocalFiles.MouseClick += new System.Windows.Forms.MouseEventHandler(this.onLocalRightClick);
             // 
             // columnHeader6
             // 
             this.columnHeader6.Text = "Name";
-            this.columnHeader6.Width = 361;
+            this.columnHeader6.Width = 365;
             // 
             // columnHeader9
             // 
@@ -469,14 +435,20 @@ namespace rClone_Downloader
             // refreshToolStripMenuItem
             // 
             this.refreshToolStripMenuItem.Name = "refreshToolStripMenuItem";
-            this.refreshToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.refreshToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
             this.refreshToolStripMenuItem.Text = "Refresh";
             // 
             // deleteToolStripMenuItem
             // 
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
             this.deleteToolStripMenuItem.Text = "Delete";
+            // 
+            // newFolderToolStripMenuItem
+            // 
+            this.newFolderToolStripMenuItem.Name = "newFolderToolStripMenuItem";
+            this.newFolderToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.newFolderToolStripMenuItem.Text = "New Folder";
             // 
             // panel4
             // 
@@ -486,7 +458,7 @@ namespace rClone_Downloader
             this.panel4.Location = new System.Drawing.Point(0, 0);
             this.panel4.Margin = new System.Windows.Forms.Padding(0);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(570, 30);
+            this.panel4.Size = new System.Drawing.Size(570, 60);
             this.panel4.TabIndex = 0;
             // 
             // panel1
@@ -496,7 +468,7 @@ namespace rClone_Downloader
             this.panel1.Controls.Add(this.radioPrompt);
             this.panel1.Controls.Add(this.radioOverwrite);
             this.panel1.Controls.Add(this.radioSkip);
-            this.panel1.Location = new System.Drawing.Point(881, 537);
+            this.panel1.Location = new System.Drawing.Point(881, 585);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(275, 20);
             this.panel1.TabIndex = 0;
@@ -511,19 +483,82 @@ namespace rClone_Downloader
             this.label1.TabIndex = 0;
             this.label1.Text = "Copy Action:";
             // 
-            // newFolderToolStripMenuItem
+            // splitContainer2
             // 
-            this.newFolderToolStripMenuItem.Name = "newFolderToolStripMenuItem";
-            this.newFolderToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.newFolderToolStripMenuItem.Text = "New Folder";
+            this.splitContainer2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.splitContainer2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.splitContainer2.Location = new System.Drawing.Point(5, 5);
+            this.splitContainer2.Margin = new System.Windows.Forms.Padding(0);
+            this.splitContainer2.Name = "splitContainer2";
+            this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer2.Panel1
+            // 
+            this.splitContainer2.Panel1.Controls.Add(this.splitContainer3);
+            this.splitContainer2.Panel1MinSize = 200;
+            // 
+            // splitContainer2.Panel2
+            // 
+            this.splitContainer2.Panel2.Controls.Add(this.listDownloads);
+            this.splitContainer2.Panel2MinSize = 200;
+            this.splitContainer2.Size = new System.Drawing.Size(1154, 576);
+            this.splitContainer2.SplitterDistance = 372;
+            this.splitContainer2.TabIndex = 2;
+            // 
+            // splitContainer3
+            // 
+            this.splitContainer3.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer3.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer3.Margin = new System.Windows.Forms.Padding(0);
+            this.splitContainer3.Name = "splitContainer3";
+            // 
+            // splitContainer3.Panel1
+            // 
+            this.splitContainer3.Panel1.Controls.Add(this.panel3);
+            this.splitContainer3.Panel1.Controls.Add(this.panel2);
+            this.splitContainer3.Panel1MinSize = 350;
+            // 
+            // splitContainer3.Panel2
+            // 
+            this.splitContainer3.Panel2.Controls.Add(this.panel5);
+            this.splitContainer3.Panel2.Controls.Add(this.panel4);
+            this.splitContainer3.Panel2MinSize = 350;
+            this.splitContainer3.Size = new System.Drawing.Size(1154, 372);
+            this.splitContainer3.SplitterDistance = 576;
+            this.splitContainer3.TabIndex = 0;
+            // 
+            // panel5
+            // 
+            this.panel5.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel5.Controls.Add(this.listLocalFiles);
+            this.panel5.Location = new System.Drawing.Point(0, 60);
+            this.panel5.Margin = new System.Windows.Forms.Padding(0);
+            this.panel5.Name = "panel5";
+            this.panel5.Size = new System.Drawing.Size(570, 308);
+            this.panel5.TabIndex = 1;
+            // 
+            // columnHeader12
+            // 
+            this.columnHeader12.Text = "Hidden Size";
+            this.columnHeader12.Width = 0;
+            // 
+            // columnHeader13
+            // 
+            this.columnHeader13.Text = "Hidden Date";
+            this.columnHeader13.Width = 0;
             // 
             // MainUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1164, 561);
+            this.ClientSize = new System.Drawing.Size(1164, 609);
+            this.Controls.Add(this.splitContainer2);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.containerMain);
             this.Controls.Add(this.panelLog);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(850, 600);
@@ -534,22 +569,23 @@ namespace rClone_Downloader
             this.panelLog.ResumeLayout(false);
             this.panelLog.PerformLayout();
             this.contextMenuDownloads.ResumeLayout(false);
-            this.containerMain.Panel1.ResumeLayout(false);
-            this.containerMain.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.containerMain)).EndInit();
-            this.containerMain.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
-            this.splitContainer1.Panel1.ResumeLayout(false);
-            this.splitContainer1.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
-            this.splitContainer1.ResumeLayout(false);
             this.contextMenuLocal.ResumeLayout(false);
             this.panel4.ResumeLayout(false);
             this.panel4.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            this.splitContainer2.Panel1.ResumeLayout(false);
+            this.splitContainer2.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
+            this.splitContainer2.ResumeLayout(false);
+            this.splitContainer3.Panel1.ResumeLayout(false);
+            this.splitContainer3.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
+            this.splitContainer3.ResumeLayout(false);
+            this.panel5.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -570,7 +606,6 @@ namespace rClone_Downloader
         private System.Windows.Forms.ColumnHeader columnHeader7;
         private System.Windows.Forms.ColumnHeader columnHeader8;
         private System.Windows.Forms.ComboBox drivesList;
-        private System.Windows.Forms.SplitContainer containerMain;
         private System.Windows.Forms.RadioButton radioPrompt;
         private System.Windows.Forms.RadioButton radioOverwrite;
         private System.Windows.Forms.RadioButton radioSkip;
@@ -586,7 +621,6 @@ namespace rClone_Downloader
         private System.Windows.Forms.ColumnHeader columnHeader6;
         private System.Windows.Forms.ColumnHeader columnHeader9;
         private System.Windows.Forms.ColumnHeader columnHeader11;
-        private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.ContextMenuStrip contextMenuDownloads;
         private System.Windows.Forms.ToolStripMenuItem removeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem clearToolStripMenuItem;
@@ -596,6 +630,11 @@ namespace rClone_Downloader
         private System.Windows.Forms.ToolStripMenuItem refreshToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem newFolderToolStripMenuItem;
+        private System.Windows.Forms.SplitContainer splitContainer2;
+        private System.Windows.Forms.SplitContainer splitContainer3;
+        private System.Windows.Forms.Panel panel5;
+        private System.Windows.Forms.ColumnHeader columnHeader12;
+        private System.Windows.Forms.ColumnHeader columnHeader13;
     }
 }
 
