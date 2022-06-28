@@ -1,6 +1,6 @@
-﻿namespace rClone_Downloader
+﻿namespace rClone_GUI
 {
-    partial class rCloneDownload
+    partial class UIStart
     {
         /// <summary>
         /// Required designer variable.
@@ -41,15 +41,15 @@
             this.label1.Text = "Please Wait...";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // rCloneDownload
+            // UIStart
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(221, 47);
             this.Controls.Add(this.label1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Name = "rCloneDownload";
-            this.Text = "rCloneDownload";
+            this.Name = "UIStart";
+            this.Text = "Start";
             this.ResumeLayout(false);
 
         }

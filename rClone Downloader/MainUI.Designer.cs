@@ -1,5 +1,5 @@
 ﻿
-namespace rClone_Downloader
+namespace rClone_GUI
 {
     partial class MainUI
     {
@@ -31,27 +31,29 @@ namespace rClone_Downloader
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainUI));
-            this.textBoxSource = new System.Windows.Forms.TextBox();
-            this.buttonGo = new System.Windows.Forms.Button();
+            this.textBoxRemote = new System.Windows.Forms.TextBox();
+            this.buttonSearch = new System.Windows.Forms.Button();
             this.textBoxFilter = new System.Windows.Forms.TextBox();
-            this.textBoxDest = new System.Windows.Forms.TextBox();
+            this.textBoxLocal = new System.Windows.Forms.TextBox();
             this.panelLog = new System.Windows.Forms.Panel();
             this.log = new System.Windows.Forms.Label();
             this.radioPrompt = new System.Windows.Forms.RadioButton();
             this.radioOverwrite = new System.Windows.Forms.RadioButton();
             this.radioSkip = new System.Windows.Forms.RadioButton();
-            this.listFiles = new System.Windows.Forms.ListView();
+            this.listRemoteFiles = new System.Windows.Forms.ListView();
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader10 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
-            this.listDownloads = new System.Windows.Forms.ListView();
+            this.listQueue = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader7 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader8 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.contextMenuDownloads = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.columnHeader12 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader13 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.contextMenuQueue = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cancelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -73,10 +75,12 @@ namespace rClone_Downloader
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.panel5 = new System.Windows.Forms.Panel();
-            this.columnHeader12 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader13 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.contextMenuRemote = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.refreshToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.newFolderToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.panelLog.SuspendLayout();
-            this.contextMenuDownloads.SuspendLayout();
+            this.contextMenuQueue.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel2.SuspendLayout();
             this.contextMenuLocal.SuspendLayout();
@@ -91,29 +95,31 @@ namespace rClone_Downloader
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
             this.panel5.SuspendLayout();
+            this.contextMenuRemote.SuspendLayout();
             this.SuspendLayout();
             // 
-            // textBoxSource
+            // textBoxRemote
             // 
-            this.textBoxSource.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.textBoxRemote.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxSource.Enabled = false;
-            this.textBoxSource.ForeColor = System.Drawing.Color.Gray;
-            this.textBoxSource.Location = new System.Drawing.Point(102, 4);
-            this.textBoxSource.Name = "textBoxSource";
-            this.textBoxSource.Size = new System.Drawing.Size(467, 20);
-            this.textBoxSource.TabIndex = 2;
+            this.textBoxRemote.Enabled = false;
+            this.textBoxRemote.ForeColor = System.Drawing.Color.Gray;
+            this.textBoxRemote.Location = new System.Drawing.Point(102, 4);
+            this.textBoxRemote.Name = "textBoxRemote";
+            this.textBoxRemote.Size = new System.Drawing.Size(467, 20);
+            this.textBoxRemote.TabIndex = 2;
+            this.textBoxRemote.Text = "/";
             // 
-            // buttonGo
+            // buttonSearch
             // 
-            this.buttonGo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonGo.Location = new System.Drawing.Point(494, 31);
-            this.buttonGo.Name = "buttonGo";
-            this.buttonGo.Size = new System.Drawing.Size(75, 21);
-            this.buttonGo.TabIndex = 4;
-            this.buttonGo.Text = "Search";
-            this.buttonGo.UseVisualStyleBackColor = true;
-            this.buttonGo.Click += new System.EventHandler(this.onButtonSearch);
+            this.buttonSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonSearch.Location = new System.Drawing.Point(494, 31);
+            this.buttonSearch.Name = "buttonSearch";
+            this.buttonSearch.Size = new System.Drawing.Size(75, 21);
+            this.buttonSearch.TabIndex = 4;
+            this.buttonSearch.Text = "Search";
+            this.buttonSearch.UseVisualStyleBackColor = true;
+            this.buttonSearch.Click += new System.EventHandler(this.onButtonSearch);
             // 
             // textBoxFilter
             // 
@@ -130,16 +136,17 @@ namespace rClone_Downloader
             this.textBoxFilter.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.onTextFilterKey);
             this.textBoxFilter.Leave += new System.EventHandler(this.onTextFilterLeave);
             // 
-            // textBoxDest
+            // textBoxLocal
             // 
-            this.textBoxDest.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.textBoxLocal.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxDest.Enabled = false;
-            this.textBoxDest.ForeColor = System.Drawing.Color.Gray;
-            this.textBoxDest.Location = new System.Drawing.Point(3, 4);
-            this.textBoxDest.Name = "textBoxDest";
-            this.textBoxDest.Size = new System.Drawing.Size(564, 20);
-            this.textBoxDest.TabIndex = 5;
+            this.textBoxLocal.Enabled = false;
+            this.textBoxLocal.ForeColor = System.Drawing.Color.Gray;
+            this.textBoxLocal.Location = new System.Drawing.Point(3, 4);
+            this.textBoxLocal.Name = "textBoxLocal";
+            this.textBoxLocal.Size = new System.Drawing.Size(564, 20);
+            this.textBoxLocal.TabIndex = 5;
+            this.textBoxLocal.Text = "..";
             // 
             // panelLog
             // 
@@ -205,32 +212,34 @@ namespace rClone_Downloader
             this.radioSkip.UseVisualStyleBackColor = true;
             this.radioSkip.Click += new System.EventHandler(this.onSkipClicked);
             // 
-            // listFiles
+            // listRemoteFiles
             // 
-            this.listFiles.AllowDrop = true;
-            this.listFiles.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listFiles.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.listRemoteFiles.AllowDrop = true;
+            this.listRemoteFiles.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.listRemoteFiles.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader3,
             this.columnHeader10,
             this.columnHeader4});
-            this.listFiles.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listFiles.GridLines = true;
-            this.listFiles.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.listFiles.HideSelection = false;
-            this.listFiles.Location = new System.Drawing.Point(0, 0);
-            this.listFiles.Margin = new System.Windows.Forms.Padding(0);
-            this.listFiles.Name = "listFiles";
-            this.listFiles.Size = new System.Drawing.Size(572, 308);
-            this.listFiles.SmallImageList = this.imageList1;
-            this.listFiles.TabIndex = 0;
-            this.listFiles.TabStop = false;
-            this.listFiles.UseCompatibleStateImageBehavior = false;
-            this.listFiles.View = System.Windows.Forms.View.Details;
-            this.listFiles.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.onDragLocal);
-            this.listFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.onDragDroprClone);
-            this.listFiles.DragOver += new System.Windows.Forms.DragEventHandler(this.onDragOverrClone);
-            this.listFiles.DoubleClick += new System.EventHandler(this.onListrCloneDoubleClick);
-            this.listFiles.KeyDown += new System.Windows.Forms.KeyEventHandler(this.onKeyDown);
+            this.listRemoteFiles.ContextMenuStrip = this.contextMenuRemote;
+            this.listRemoteFiles.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listRemoteFiles.GridLines = true;
+            this.listRemoteFiles.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.listRemoteFiles.HideSelection = false;
+            this.listRemoteFiles.Location = new System.Drawing.Point(0, 0);
+            this.listRemoteFiles.Margin = new System.Windows.Forms.Padding(0);
+            this.listRemoteFiles.Name = "listRemoteFiles";
+            this.listRemoteFiles.Size = new System.Drawing.Size(572, 308);
+            this.listRemoteFiles.SmallImageList = this.imageList1;
+            this.listRemoteFiles.TabIndex = 0;
+            this.listRemoteFiles.TabStop = false;
+            this.listRemoteFiles.UseCompatibleStateImageBehavior = false;
+            this.listRemoteFiles.View = System.Windows.Forms.View.Details;
+            this.listRemoteFiles.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.onListLocalDrag);
+            this.listRemoteFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.onListRemoteDragDrop);
+            this.listRemoteFiles.DragOver += new System.Windows.Forms.DragEventHandler(this.onListRemoteDragOver);
+            this.listRemoteFiles.DoubleClick += new System.EventHandler(this.onListRemoteDoubleClick);
+            this.listRemoteFiles.KeyDown += new System.Windows.Forms.KeyEventHandler(this.onListRemoteKeyDown);
+            this.listRemoteFiles.MouseClick += new System.Windows.Forms.MouseEventHandler(this.onListRemoteRightClick);
             // 
             // columnHeader3
             // 
@@ -256,10 +265,10 @@ namespace rClone_Downloader
             this.imageList1.Images.SetKeyName(2, "drive_icon.png");
             this.imageList1.Images.SetKeyName(3, "back_icon.png");
             // 
-            // listDownloads
+            // listQueue
             // 
-            this.listDownloads.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listDownloads.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.listQueue.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.listQueue.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
             this.columnHeader2,
             this.columnHeader5,
@@ -267,21 +276,21 @@ namespace rClone_Downloader
             this.columnHeader8,
             this.columnHeader12,
             this.columnHeader13});
-            this.listDownloads.ContextMenuStrip = this.contextMenuDownloads;
-            this.listDownloads.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listDownloads.GridLines = true;
-            this.listDownloads.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.listDownloads.HideSelection = false;
-            this.listDownloads.Location = new System.Drawing.Point(0, 0);
-            this.listDownloads.Margin = new System.Windows.Forms.Padding(0);
-            this.listDownloads.Name = "listDownloads";
-            this.listDownloads.Size = new System.Drawing.Size(1150, 196);
-            this.listDownloads.TabIndex = 0;
-            this.listDownloads.TabStop = false;
-            this.listDownloads.UseCompatibleStateImageBehavior = false;
-            this.listDownloads.View = System.Windows.Forms.View.Details;
-            this.listDownloads.ColumnWidthChanging += new System.Windows.Forms.ColumnWidthChangingEventHandler(this.onWidthChanging);
-            this.listDownloads.MouseClick += new System.Windows.Forms.MouseEventHandler(this.onDownloadsRightClick);
+            this.listQueue.ContextMenuStrip = this.contextMenuQueue;
+            this.listQueue.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listQueue.GridLines = true;
+            this.listQueue.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.listQueue.HideSelection = false;
+            this.listQueue.Location = new System.Drawing.Point(0, 0);
+            this.listQueue.Margin = new System.Windows.Forms.Padding(0);
+            this.listQueue.Name = "listQueue";
+            this.listQueue.Size = new System.Drawing.Size(1150, 196);
+            this.listQueue.TabIndex = 0;
+            this.listQueue.TabStop = false;
+            this.listQueue.UseCompatibleStateImageBehavior = false;
+            this.listQueue.View = System.Windows.Forms.View.Details;
+            this.listQueue.ColumnWidthChanging += new System.Windows.Forms.ColumnWidthChangingEventHandler(this.onListQueueColumnWidthChanging);
+            this.listQueue.MouseClick += new System.Windows.Forms.MouseEventHandler(this.onListQueueRightClick);
             // 
             // columnHeader1
             // 
@@ -308,16 +317,26 @@ namespace rClone_Downloader
             this.columnHeader8.Text = "ETA";
             this.columnHeader8.Width = 74;
             // 
-            // contextMenuDownloads
+            // columnHeader12
             // 
-            this.contextMenuDownloads.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.columnHeader12.Text = "Hidden Size";
+            this.columnHeader12.Width = 0;
+            // 
+            // columnHeader13
+            // 
+            this.columnHeader13.Text = "Hidden Date";
+            this.columnHeader13.Width = 0;
+            // 
+            // contextMenuQueue
+            // 
+            this.contextMenuQueue.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.removeToolStripMenuItem,
             this.clearToolStripMenuItem,
             this.cancelToolStripMenuItem,
             this.startStripMenuItem1});
-            this.contextMenuDownloads.Name = "contextMenuStrip1";
-            this.contextMenuDownloads.Size = new System.Drawing.Size(173, 92);
-            this.contextMenuDownloads.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.onContextMenuDownloadsClick);
+            this.contextMenuQueue.Name = "contextMenuStrip1";
+            this.contextMenuQueue.Size = new System.Drawing.Size(173, 92);
+            this.contextMenuQueue.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.onListQueueContextMenuClick);
             // 
             // removeToolStripMenuItem
             // 
@@ -360,7 +379,7 @@ namespace rClone_Downloader
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel3.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.panel3.Controls.Add(this.listFiles);
+            this.panel3.Controls.Add(this.listRemoteFiles);
             this.panel3.Location = new System.Drawing.Point(0, 60);
             this.panel3.Margin = new System.Windows.Forms.Padding(0);
             this.panel3.Name = "panel3";
@@ -371,10 +390,10 @@ namespace rClone_Downloader
             // 
             this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel2.Controls.Add(this.buttonGo);
+            this.panel2.Controls.Add(this.buttonSearch);
             this.panel2.Controls.Add(this.textBoxFilter);
             this.panel2.Controls.Add(this.drivesList);
-            this.panel2.Controls.Add(this.textBoxSource);
+            this.panel2.Controls.Add(this.textBoxRemote);
             this.panel2.Location = new System.Drawing.Point(0, 0);
             this.panel2.Margin = new System.Windows.Forms.Padding(0);
             this.panel2.Name = "panel2";
@@ -401,11 +420,11 @@ namespace rClone_Downloader
             this.listLocalFiles.TabIndex = 0;
             this.listLocalFiles.UseCompatibleStateImageBehavior = false;
             this.listLocalFiles.View = System.Windows.Forms.View.Details;
-            this.listLocalFiles.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.onDragrClone);
-            this.listLocalFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.onDragDropLocal);
-            this.listLocalFiles.DragOver += new System.Windows.Forms.DragEventHandler(this.onDragOverLocal);
+            this.listLocalFiles.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.onListRemoteDrag);
+            this.listLocalFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.onListLocalDragDrop);
+            this.listLocalFiles.DragOver += new System.Windows.Forms.DragEventHandler(this.onListLocalDragOver);
             this.listLocalFiles.DoubleClick += new System.EventHandler(this.onListLocalDoubleClick);
-            this.listLocalFiles.MouseClick += new System.Windows.Forms.MouseEventHandler(this.onLocalRightClick);
+            this.listLocalFiles.MouseClick += new System.Windows.Forms.MouseEventHandler(this.onListLocalRightClick);
             // 
             // columnHeader6
             // 
@@ -430,7 +449,7 @@ namespace rClone_Downloader
             this.newFolderToolStripMenuItem});
             this.contextMenuLocal.Name = "contextMenuStrip1";
             this.contextMenuLocal.Size = new System.Drawing.Size(135, 70);
-            this.contextMenuLocal.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.onContextMenuLocalClick);
+            this.contextMenuLocal.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.onListLocalContextMenuClick);
             // 
             // refreshToolStripMenuItem
             // 
@@ -454,7 +473,7 @@ namespace rClone_Downloader
             // 
             this.panel4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel4.Controls.Add(this.textBoxDest);
+            this.panel4.Controls.Add(this.textBoxLocal);
             this.panel4.Location = new System.Drawing.Point(0, 0);
             this.panel4.Margin = new System.Windows.Forms.Padding(0);
             this.panel4.Name = "panel4";
@@ -501,7 +520,7 @@ namespace rClone_Downloader
             // 
             // splitContainer2.Panel2
             // 
-            this.splitContainer2.Panel2.Controls.Add(this.listDownloads);
+            this.splitContainer2.Panel2.Controls.Add(this.listQueue);
             this.splitContainer2.Panel2MinSize = 200;
             this.splitContainer2.Size = new System.Drawing.Size(1154, 576);
             this.splitContainer2.SplitterDistance = 372;
@@ -542,15 +561,33 @@ namespace rClone_Downloader
             this.panel5.Size = new System.Drawing.Size(570, 308);
             this.panel5.TabIndex = 1;
             // 
-            // columnHeader12
+            // contextMenuRemote
             // 
-            this.columnHeader12.Text = "Hidden Size";
-            this.columnHeader12.Width = 0;
+            this.contextMenuRemote.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.refreshToolStripMenuItem1,
+            this.deleteToolStripMenuItem1,
+            this.newFolderToolStripMenuItem1});
+            this.contextMenuRemote.Name = "contextMenuRemote";
+            this.contextMenuRemote.Size = new System.Drawing.Size(135, 70);
+            this.contextMenuRemote.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.onListRemoteContextMenuClick);
             // 
-            // columnHeader13
+            // refreshToolStripMenuItem1
             // 
-            this.columnHeader13.Text = "Hidden Date";
-            this.columnHeader13.Width = 0;
+            this.refreshToolStripMenuItem1.Name = "refreshToolStripMenuItem1";
+            this.refreshToolStripMenuItem1.Size = new System.Drawing.Size(134, 22);
+            this.refreshToolStripMenuItem1.Text = "Refresh";
+            // 
+            // deleteToolStripMenuItem1
+            // 
+            this.deleteToolStripMenuItem1.Name = "deleteToolStripMenuItem1";
+            this.deleteToolStripMenuItem1.Size = new System.Drawing.Size(134, 22);
+            this.deleteToolStripMenuItem1.Text = "Delete";
+            // 
+            // newFolderToolStripMenuItem1
+            // 
+            this.newFolderToolStripMenuItem1.Name = "newFolderToolStripMenuItem1";
+            this.newFolderToolStripMenuItem1.Size = new System.Drawing.Size(134, 22);
+            this.newFolderToolStripMenuItem1.Text = "New Folder";
             // 
             // MainUI
             // 
@@ -564,11 +601,11 @@ namespace rClone_Downloader
             this.MinimumSize = new System.Drawing.Size(850, 600);
             this.Name = "MainUI";
             this.Padding = new System.Windows.Forms.Padding(5);
-            this.Text = "rClone Downloader";
+            this.Text = "rClone GUI Tool";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.onClosing);
             this.panelLog.ResumeLayout(false);
             this.panelLog.PerformLayout();
-            this.contextMenuDownloads.ResumeLayout(false);
+            this.contextMenuQueue.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
@@ -586,20 +623,21 @@ namespace rClone_Downloader
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
             this.splitContainer3.ResumeLayout(false);
             this.panel5.ResumeLayout(false);
+            this.contextMenuRemote.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
 
         #endregion
-        private System.Windows.Forms.TextBox textBoxDest;
+        private System.Windows.Forms.TextBox textBoxLocal;
         private System.Windows.Forms.TextBox textBoxFilter;
-        private System.Windows.Forms.Button buttonGo;
-        private System.Windows.Forms.TextBox textBoxSource;
+        private System.Windows.Forms.Button buttonSearch;
+        private System.Windows.Forms.TextBox textBoxRemote;
         private System.Windows.Forms.Panel panelLog;
-        private System.Windows.Forms.ListView listDownloads;
+        private System.Windows.Forms.ListView listQueue;
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
-        private System.Windows.Forms.ListView listFiles;
+        private System.Windows.Forms.ListView listRemoteFiles;
         private System.Windows.Forms.ColumnHeader columnHeader3;
         private System.Windows.Forms.ColumnHeader columnHeader4;
         private System.Windows.Forms.ColumnHeader columnHeader5;
@@ -621,7 +659,7 @@ namespace rClone_Downloader
         private System.Windows.Forms.ColumnHeader columnHeader6;
         private System.Windows.Forms.ColumnHeader columnHeader9;
         private System.Windows.Forms.ColumnHeader columnHeader11;
-        private System.Windows.Forms.ContextMenuStrip contextMenuDownloads;
+        private System.Windows.Forms.ContextMenuStrip contextMenuQueue;
         private System.Windows.Forms.ToolStripMenuItem removeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem clearToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem cancelToolStripMenuItem;
@@ -635,6 +673,10 @@ namespace rClone_Downloader
         private System.Windows.Forms.Panel panel5;
         private System.Windows.Forms.ColumnHeader columnHeader12;
         private System.Windows.Forms.ColumnHeader columnHeader13;
+        private System.Windows.Forms.ContextMenuStrip contextMenuRemote;
+        private System.Windows.Forms.ToolStripMenuItem refreshToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem newFolderToolStripMenuItem1;
     }
 }
 

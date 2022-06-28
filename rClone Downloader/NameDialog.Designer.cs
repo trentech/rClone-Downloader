@@ -1,4 +1,4 @@
-﻿namespace rClone_Downloader
+﻿namespace rClone_GUI
 {
     partial class NameDialog
     {

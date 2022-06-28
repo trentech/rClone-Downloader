@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{E446999D-479B-4A8E-B954-21783329652F}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>rClone_Downloader</RootNamespace>
-    <AssemblyName>rClone Downloader</AssemblyName>
+    <RootNamespace>rClone_GUI</RootNamespace>
+    <AssemblyName>rClone GUI Tool</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -69,13 +69,14 @@
     <Compile Include="NameDialog.Designer.cs">
       <DependentUpon>NameDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Operation.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="rCloneDownload.cs">
+    <Compile Include="UIStart.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="rCloneDownload.Designer.cs">
-      <DependentUpon>rCloneDownload.cs</DependentUpon>
+    <Compile Include="UIStart.Designer.cs">
+      <DependentUpon>UIStart.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Include="MainUI.resx">
       <DependentUpon>MainUI.cs</DependentUpon>
@@ -93,8 +94,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="rCloneDownload.resx">
-      <DependentUpon>rCloneDownload.cs</DependentUpon>
+    <EmbeddedResource Include="UIStart.resx">
+      <DependentUpon>UIStart.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.manifest" />
     <None Include="packages.config" />

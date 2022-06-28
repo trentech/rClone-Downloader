@@ -1,32 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Globalization;
-using System.Text.RegularExpressions;
 using System.Drawing;
 using System.Linq;
 
-namespace rClone_Downloader
+namespace rClone_GUI
 {
-    public partial class MainUI : System.Windows.Forms.Form
+    public partial class MainUI : Form
     {
         private List<string> folders = new List<string>();
         private List<string> files = new List<string>();
+
         private Process downloadProcess = null;
-        private Process listProcess = null;
-        private string rclone = null;
+        private Process searchProcess = null;
+
+        private string rclone;
         private bool downloading = false;
         private bool cancel = false;
 
         public MainUI(string rClone)
         {
             InitializeComponent();
-            this.rclone = rClone;
+
+            Screen screen = Screen.FromControl(this);
+            Rectangle workingArea = screen.WorkingArea;
+
+            Location = new Point
+            {
+                X = Math.Max(workingArea.X, workingArea.X + (workingArea.Width - Width) / 2),
+                Y = Math.Max(workingArea.Y, workingArea.Y + (workingArea.Height - Height) / 2)
+            };
+
+            rclone = rClone;
+
             string[] config = System.IO.File.ReadAllLines(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\rclone\rclone.conf");
 
             foreach (string line in config)
@@ -37,14 +47,7 @@ namespace rClone_Downloader
                 }
             }
 
-            string drive = Properties.Settings.Default.Drive;
-            if (drive == "" || !drivesList.Items.Contains(drive))
-            {
-                drivesList.SelectedIndex = 0;
-            } else
-            {
-                drivesList.SelectedItem = drive;
-            }
+            drivesList.SelectedIndex = 0;
 
             if(drivesList.Items.Count == 0)
             {
@@ -52,55 +55,51 @@ namespace rClone_Downloader
                 Close();
             }
 
-            if (Properties.Settings.Default.Source != "" && Properties.Settings.Default.Source != null)
-            {
-                textBoxSource.Text = Properties.Settings.Default.Source;
-            }
-
             if (Properties.Settings.Default.Filter != "")
             {
                 textBoxFilter.Text = Properties.Settings.Default.Filter;
             }
 
-            if (Properties.Settings.Default.Destination == "" || Properties.Settings.Default.Destination == ".." || !Directory.Exists(Properties.Settings.Default.Destination))
+            if (Properties.Settings.Default.LocalPath == "" || Properties.Settings.Default.LocalPath == ".." || !Directory.Exists(Properties.Settings.Default.LocalPath))
             {
                 foreach (var dDrive in DriveInfo.GetDrives())
                 {
-                    ListViewItem drive1 = new ListViewItem(dDrive.Name.Trim());
+                    ListViewItem drive = new ListViewItem(dDrive.Name.Trim());
 
-                    drive1.SubItems.Add("");
-                    drive1.SubItems.Add(getSize(dDrive.TotalSize));
-                    drive1.ImageIndex = 2;
+                    drive.SubItems.Add("");
+                    drive.SubItems.Add(ConvertSize(dDrive.TotalSize));
+                    drive.ImageIndex = 2;
 
-                    listLocalFiles.Items.Add(drive1);
+                    listLocalFiles.Items.Add(drive);
                 }
 
-                textBoxDest.Text = "..";
-            } else
+                textBoxLocal.Text = "..";
+            }
+            else
             {
-                textBoxDest.Text = Properties.Settings.Default.Destination;
-                SearchLocal(textBoxDest.Text);
+                textBoxLocal.Text = Properties.Settings.Default.LocalPath;
+                SearchLocal(textBoxLocal.Text);
             }
 
-            if (Properties.Settings.Default.Action == "" || Properties.Settings.Default.Action == "Prompt")
+            if (Properties.Settings.Default.Overwrite == "" || Properties.Settings.Default.Overwrite == "Prompt")
             {
                 radioSkip.Checked = false;
                 radioOverwrite.Checked = false;
                 radioPrompt.Checked = true;
-            } 
-            else if(Properties.Settings.Default.Action == "Overwrite")
+            }
+            else if (Properties.Settings.Default.Overwrite == "Overwrite")
             {
                 radioSkip.Checked = false;
                 radioOverwrite.Checked = true;
                 radioPrompt.Checked = false;
             }
-            else if (Properties.Settings.Default.Action == "Skip")
+            else if (Properties.Settings.Default.Overwrite == "Skip")
             {
                 radioSkip.Checked = true;
                 radioOverwrite.Checked = false;
                 radioPrompt.Checked = false;
             }
-            else if (Properties.Settings.Default.Action == "Prompt")
+            else if (Properties.Settings.Default.Overwrite == "Prompt")
             {
                 radioSkip.Checked = false;
                 radioOverwrite.Checked = false;
@@ -111,12 +110,12 @@ namespace rClone_Downloader
         private void onButtonSearch(object sender, EventArgs e)
         {
             string source;
-            if(textBoxSource.Text == "Source" || textBoxSource.Text == "")
+            if(textBoxRemote.Text == "")
             {
                 source = "/";
             } else
             {
-                source = textBoxSource.Text;
+                source = textBoxRemote.Text;
             }
 
             if (source.Substring(source.Length - 1) == "/")
@@ -129,39 +128,33 @@ namespace rClone_Downloader
                 source = "/" + source;
             }
 
-            textBoxSource.Text = source;
+            textBoxRemote.Text = source;
 
-            Properties.Settings.Default.Source = textBoxSource.Text;
-            Properties.Settings.Default.Drive = drivesList.SelectedItem.ToString();
-            Properties.Settings.Default.Save();
-
-            SearchRClone();
+            SearchRemote();
         }
 
-        private void onListrCloneDoubleClick(object sender, EventArgs e)
+        private void onListRemoteDoubleClick(object sender, EventArgs e)
         {
-            string item = listFiles.SelectedItems[0].SubItems[0].Text;
+            string item = listRemoteFiles.SelectedItems[0].SubItems[0].Text;
 
-            if (listFiles.SelectedItems[0].ImageIndex == 1)
+            if (listRemoteFiles.SelectedItems[0].ImageIndex == 1)
             {
-                string source = Properties.Settings.Default.Source;
+                string source = textBoxRemote.Text;
 
                 if (source.EndsWith("/"))
                 {
-                    Properties.Settings.Default.Source = textBoxSource.Text + item;
+                    textBoxRemote.Text += item;
                 }
                 else
                 {
-                    Properties.Settings.Default.Source = textBoxSource.Text + "/" + item;
+                    textBoxRemote.Text = textBoxRemote.Text + "/" + item;
                 }
 
-                Properties.Settings.Default.Save();
-
-                SearchRClone();
+                SearchRemote();
             }
-            else if (listFiles.SelectedItems[0].ImageIndex == 3)
+            else if (listRemoteFiles.SelectedItems[0].ImageIndex == 3)
             {
-                string source = Properties.Settings.Default.Source;
+                string source = textBoxRemote.Text;
 
                 string[] split = source.TrimStart('/').Split('/');
 
@@ -169,7 +162,7 @@ namespace rClone_Downloader
                 {
                     if (split.Length == 1)
                     {
-                        Properties.Settings.Default.Source = "/";
+                        textBoxRemote.Text = "/";
                     }
                     else
                     {
@@ -194,12 +187,10 @@ namespace rClone_Downloader
                             }
                         }
 
-                        Properties.Settings.Default.Source = parent.Substring(0, parent.Length - 1);
+                        textBoxRemote.Text = parent.Substring(0, parent.Length - 1);
                     }
 
-                    Properties.Settings.Default.Save();
-
-                    SearchRClone();
+                    SearchRemote();
                 }
             }
         }
@@ -222,11 +213,11 @@ namespace rClone_Downloader
         {
             if (textBoxFilter.Text == "Filter" || textBoxFilter.Text == "")
             {
-                textBoxFilter.ForeColor = System.Drawing.Color.Gray;
+                textBoxFilter.ForeColor = Color.Gray;
             }
             else
             {
-                textBoxFilter.ForeColor = System.Drawing.Color.Black;
+                textBoxFilter.ForeColor = Color.Black;
             }
         }
 
@@ -248,9 +239,30 @@ namespace rClone_Downloader
 
         private void onTextFilterLeave(object sender, EventArgs e)
         {
-            if (textBoxFilter.Text == "")
+            if (textBoxFilter.Text == "" || textBoxFilter.Text == "Filter")
             {
                 textBoxFilter.Text = "Filter";
+            }
+        }
+
+        private void onListRemoteKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyData == (Keys.A | Keys.Control))
+            {
+                listRemoteFiles.BeginUpdate();
+
+                for (int i = 0; i < listRemoteFiles.Items.Count; i++)
+                {
+                    foreach (ListViewItem item in listRemoteFiles.Items)
+                    {
+                        if (item.ImageIndex != 3)
+                        {
+                            item.Selected = true;
+                        }
+                    }
+                }
+                e.SuppressKeyPress = true;
+                listRemoteFiles.EndUpdate();
             }
         }
 
@@ -259,9 +271,6 @@ namespace rClone_Downloader
             radioOverwrite.Checked = true;
             radioPrompt.Checked = !radioOverwrite.Checked;
             radioSkip.Checked = !radioOverwrite.Checked;
-
-            Properties.Settings.Default.Action = "Overwrite";
-            Properties.Settings.Default.Save();
         }
 
         private void onSkipClicked(object sender, EventArgs e)
@@ -269,9 +278,6 @@ namespace rClone_Downloader
             radioSkip.Checked = true;
             radioOverwrite.Checked = !radioSkip.Checked;
             radioPrompt.Checked = !radioSkip.Checked;
-
-            Properties.Settings.Default.Action = "Skip";
-            Properties.Settings.Default.Save();
         }
 
         private void onPromptClick(object sender, EventArgs e)
@@ -279,18 +285,21 @@ namespace rClone_Downloader
             radioPrompt.Checked = true;
             radioSkip.Checked = !radioPrompt.Checked;
             radioOverwrite.Checked = !radioPrompt.Checked;
-
-            Properties.Settings.Default.Action = "Prompt";
-            Properties.Settings.Default.Save();
         }
 
-        private void onDragDropLocal(object sender, DragEventArgs e)
+        private void onListLocalDragDrop(object sender, DragEventArgs e)
         {
+            if(rCloneInternal)
+            {
+                rCloneInternal = false;
+                return;
+            }
+
             if (e.Data.GetDataPresent(typeof(List<ListViewItem>)))
             {
                 var items = (List<ListViewItem>)e.Data.GetData(typeof(List<ListViewItem>));
 
-                string source = Properties.Settings.Default.Source;
+                string source = textBoxRemote.Text;
 
                 foreach (ListViewItem file in items)
                 {
@@ -306,24 +315,24 @@ namespace rClone_Downloader
                     string destination;
                     if (listLocalFiles.SelectedItems.Count == 0)
                     {
-                        destination = Properties.Settings.Default.Destination;
+                        destination = textBoxLocal.Text;
                     }
                     else
                     {
-                        destination = Properties.Settings.Default.Destination + listLocalFiles.SelectedItems[0].SubItems[0].Text;
+                        destination = textBoxLocal.Text + listLocalFiles.SelectedItems[0].SubItems[0].Text;
                     }
 
-                    string operation = (fileName + "→" + destination + @"\" + file.SubItems[0].Text).Replace(@"\\", @"\");
+                    string operation = (fileName + " → " + destination + @"\" + file.SubItems[0].Text).Replace(@"\\", @"\");
 
-                    if (listDownloads.FindItemWithText(operation) == null)
+                    if (listQueue.FindItemWithText(operation) == null)
                     {
-                        ListViewItem item = new ListViewItem((fileName + "→" + destination + @"\" + file.SubItems[0].Text).Replace(@"\\", @"\"));
+                        ListViewItem item = new ListViewItem((fileName + " → " + destination + @"\" + file.SubItems[0].Text).Replace(@"\\", @"\"));
                         item.SubItems.Add("Queued");
                         item.SubItems.Add("");
                         item.SubItems.Add("");
                         item.SubItems.Add("");
 
-                        listDownloads.Items.Add(item);
+                        listQueue.Items.Add(item);
                     }
                 }
 
@@ -331,11 +340,13 @@ namespace rClone_Downloader
             }
         }
 
-        private void onDragLocal(object sender, ItemDragEventArgs e)
+        bool Localinternal = false;
+        private void onListLocalDrag(object sender, ItemDragEventArgs e)
         {
+            Localinternal = true;
             List<ListViewItem> items = new List<ListViewItem>();
 
-            foreach (ListViewItem item in listFiles.SelectedItems)
+            foreach (ListViewItem item in listRemoteFiles.SelectedItems)
             {
                 if (item.ImageIndex == 1 || item.ImageIndex == 3)
                 {
@@ -345,10 +356,12 @@ namespace rClone_Downloader
                 items.Add(item);
             }
 
-            listFiles.DoDragDrop(items, DragDropEffects.Copy);
+            listRemoteFiles.DoDragDrop(items, DragDropEffects.Copy);
+
+            Localinternal = false;
         }
 
-        private void onDragOverLocal(object sender, DragEventArgs e)
+        private void onListLocalDragOver(object sender, DragEventArgs e)
         {
             listLocalFiles.Select();
 
@@ -367,39 +380,37 @@ namespace rClone_Downloader
                 item.Selected = true;
             }
         }
-        private void onDragDroprClone(object sender, DragEventArgs e)
+        private void onListRemoteDragDrop(object sender, DragEventArgs e)
         {
+            if(Localinternal)
+            {
+                Localinternal = false;
+                return;
+            }
+
             if (e.Data.GetDataPresent(typeof(List<ListViewItem>)))
             {
                 var items = (List<ListViewItem>)e.Data.GetData(typeof(List<ListViewItem>));
 
-                string source = Properties.Settings.Default.Source;
+                string source = textBoxRemote.Text;
 
                 foreach (ListViewItem file in items)
                 {
-                    string fileName;
-                    if (source == "/")
-                    {
-                        fileName = drivesList.SelectedItem.ToString() + ":" + source + file.SubItems[0].Text;
-                    }
-                    else
-                    {
-                        fileName = drivesList.SelectedItem.ToString() + ":" + source + "/" + file.SubItems[0].Text;
-                    }
+                    string fileName = textBoxLocal.Text + @"\" + file.SubItems[0].Text;
 
                     string destination;
-                    if (listLocalFiles.SelectedItems.Count == 0)
+                    if (listRemoteFiles.SelectedItems.Count == 0)
                     {
-                        destination = Properties.Settings.Default.Destination;
+                        destination = drivesList.SelectedItem.ToString() + ":" + textBoxRemote.Text;
                     }
                     else
                     {
-                        destination = Properties.Settings.Default.Destination + listLocalFiles.SelectedItems[0].SubItems[0].Text;
+                        destination = drivesList.SelectedItem.ToString() + ":" + textBoxRemote.Text + listRemoteFiles.SelectedItems[0].SubItems[0].Text;
                     }
 
-                    string operation = (fileName + "←" + destination + @"\" + file.SubItems[0].Text).Replace(@"\\", @"\");
+                    string operation = (fileName + " → " + destination + "/" + file.SubItems[0].Text).Replace("//", "/").Replace(@"\\", @"\");
 
-                    if (listDownloads.FindItemWithText(operation) == null)
+                    if (listQueue.FindItemWithText(operation) == null)
                     {
                         ListViewItem item = new ListViewItem(operation);
                         item.SubItems.Add("Queued");
@@ -409,7 +420,7 @@ namespace rClone_Downloader
                         item.SubItems.Add(file.SubItems[1].Text);
                         item.SubItems.Add(file.SubItems[2].Text);
 
-                        listDownloads.Items.Add(item);
+                        listQueue.Items.Add(item);
                     }
                 }
 
@@ -417,8 +428,10 @@ namespace rClone_Downloader
             }
         }
 
-        private void onDragrClone(object sender, ItemDragEventArgs e)
+        bool rCloneInternal = false;
+        private void onListRemoteDrag(object sender, ItemDragEventArgs e)
         {
+            rCloneInternal = true;
             List<ListViewItem> items = new List<ListViewItem>();
 
             foreach (ListViewItem item in listLocalFiles.SelectedItems)
@@ -432,21 +445,23 @@ namespace rClone_Downloader
             }
 
             listLocalFiles.DoDragDrop(items, DragDropEffects.Copy);
+
+            rCloneInternal = false;
         }
 
-        private void onDragOverrClone(object sender, DragEventArgs e)
+        private void onListRemoteDragOver(object sender, DragEventArgs e)
         {
-            listFiles.Select();
+            listRemoteFiles.Select();
 
-            listFiles.SelectedItems.Clear();
+            listRemoteFiles.SelectedItems.Clear();
 
             if (e.Data.GetDataPresent(typeof(List<ListViewItem>)))
             {
                 e.Effect = e.AllowedEffect;
             }
 
-            Point localPoint = listFiles.PointToClient(Cursor.Position);
-            ListViewItem item = listFiles.GetItemAt(localPoint.X, localPoint.Y);
+            Point localPoint = listRemoteFiles.PointToClient(Cursor.Position);
+            ListViewItem item = listRemoteFiles.GetItemAt(localPoint.X, localPoint.Y);
 
             if (item != null)
             {
@@ -454,7 +469,15 @@ namespace rClone_Downloader
             }
         }
 
-        private void onLocalRightClick(object sender, MouseEventArgs e)
+        private void onListRemoteRightClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                contextMenuRemote.Show(Cursor.Position);
+            }
+        }
+
+        private void onListLocalRightClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
             {
@@ -462,11 +485,11 @@ namespace rClone_Downloader
             }
         }
 
-        private void onContextMenuLocalClick(object sender, ToolStripItemClickedEventArgs e)
+        private void onListLocalContextMenuClick(object sender, ToolStripItemClickedEventArgs e)
         {
             if (e.ClickedItem.Text == "Refresh")
             {
-                SearchLocal(textBoxDest.Text);
+                SearchLocal(textBoxLocal.Text);
             }
             else if (e.ClickedItem.Text == "Delete")
             {
@@ -481,14 +504,14 @@ namespace rClone_Downloader
                 {
                     foreach (ListViewItem item in listLocalFiles.SelectedItems)
                     {
-                        DirectoryInfo directory = new DirectoryInfo(textBoxDest.Text + @"\" + item.SubItems[0].Text);
+                        DirectoryInfo directory = new DirectoryInfo(textBoxLocal.Text + @"\" + item.SubItems[0].Text);
 
                         if(directory.Exists)
                         {
                             directory.Delete();
                         } else
                         {
-                            FileInfo file = new FileInfo(textBoxDest.Text + @"\" + item.SubItems[0].Text);
+                            FileInfo file = new FileInfo(textBoxLocal.Text + @"\" + item.SubItems[0].Text);
 
                             if (file.Exists)
                             {
@@ -497,57 +520,93 @@ namespace rClone_Downloader
                         }
                     }
 
-                    SearchLocal(textBoxDest.Text);
+                    SearchLocal(textBoxLocal.Text);
                 }
             }
             else if (e.ClickedItem.Text == "New Folder")
             {
                 NameDialog dialog = new NameDialog();
-                Program.CenterToScreen(dialog);
+
                 DialogResult result = dialog.ShowDialog();
 
                 if(result == DialogResult.OK)
                 {
                     string name = dialog.getName();
 
-                    new DirectoryInfo(textBoxDest.Text + @"\" + name).Create();
+                    new DirectoryInfo(textBoxLocal.Text + @"\" + name).Create();
 
-                    SearchLocal(textBoxDest.Text);
+                    SearchLocal(textBoxLocal.Text);
                 }
             }
         }
 
-        private void onDownloadsRightClick(object sender, MouseEventArgs e)
+        private void onListRemoteContextMenuClick(object sender, ToolStripItemClickedEventArgs e)
         {
-            if (e.Button == MouseButtons.Right)
+            if (e.ClickedItem.Text == "Refresh")
             {
-                contextMenuDownloads.Show(Cursor.Position);
+                SearchRemote();
+            }
+            else if (e.ClickedItem.Text == "Delete")
+            {
+                contextMenuLocal.Close();
+                DialogResult result = MessageBox.Show("Are you sure you want to delete?", "Delete Files/Folders", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                if (result == DialogResult.No)
+                {
+                    return;
+                }
+                else if (result == DialogResult.Yes)
+                {
+                    foreach (ListViewItem item in listRemoteFiles.SelectedItems)
+                    {
+                        // ADD LOGIC
+                    }
+                }
+            }
+            else if (e.ClickedItem.Text == "New Folder")
+            {
+                NameDialog dialog = new NameDialog();
+
+                DialogResult result = dialog.ShowDialog();
+
+                if (result == DialogResult.OK)
+                {
+                    // ADD LOGIC
+                }
             }
         }
 
-        private void onContextMenuDownloadsClick(object sender, ToolStripItemClickedEventArgs e)
+        private void onListQueueRightClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                contextMenuQueue.Show(Cursor.Position);
+            }
+        }
+
+        private void onListQueueContextMenuClick(object sender, ToolStripItemClickedEventArgs e)
         {
             if (e.ClickedItem.Text == "Remove")
             {
-                foreach (ListViewItem file in listDownloads.SelectedItems)
+                foreach (ListViewItem file in listQueue.SelectedItems)
                 {
                     string status = file.SubItems[1].Text;
 
                     if (status.StartsWith("Queued") || status.StartsWith("Complete") || status.StartsWith("Error:"))
                     {
-                        listDownloads.Items.Remove(file);
+                        listQueue.Items.Remove(file);
                     }
                 }
             }
             else if (e.ClickedItem.Text == "Clear")
             {
-                foreach (ListViewItem item in listDownloads.Items)
+                foreach (ListViewItem item in listQueue.Items)
                 {
                     string status = item.SubItems[1].Text;
 
                     if (status.StartsWith("Queued") || status.StartsWith("Complete") || status.StartsWith("Error:"))
                     {
-                        listDownloads.Items.Remove(item);
+                        listQueue.Items.Remove(item);
                     }
                 }
             }
@@ -564,13 +623,13 @@ namespace rClone_Downloader
 
         private async Task<string> UpdateList()
         {
-            string source = Properties.Settings.Default.Source;
-            string drive = Properties.Settings.Default.Drive;
+            string source = textBoxRemote.Text;
+            string drive = drivesList.SelectedItem.ToString();
 
             folders.Clear();
             files.Clear();
 
-            textBoxSource.Text = source;
+            textBoxRemote.Text = source;
 
             string error = null;
 
@@ -578,19 +637,12 @@ namespace rClone_Downloader
             {
                 string args = "lsf --format stp --separator \"|\" \"" + drive + ":" + source + "\"";
 
-                if (textBoxFilter.Text == "" || textBoxFilter.Text == "Filter")
-                {
-                    Properties.Settings.Default.Filter = "";
-                }
-                else
+                if (textBoxFilter.Text != "" && textBoxFilter.Text != "Filter")
                 {
                     args = args + " " + textBoxFilter.Text;
-                    Properties.Settings.Default.Filter = textBoxFilter.Text;
                 }
 
-                Properties.Settings.Default.Save();
-
-                listProcess = new Process
+                searchProcess = new Process
                 {
                     StartInfo = new ProcessStartInfo
                     {
@@ -603,11 +655,11 @@ namespace rClone_Downloader
                     }
                 };
 
-                listProcess.Start();
+                searchProcess.Start();
 
-                while (!listProcess.StandardOutput.EndOfStream)
+                while (!searchProcess.StandardOutput.EndOfStream)
                 {
-                    string line = listProcess.StandardOutput.ReadLine();
+                    string line = searchProcess.StandardOutput.ReadLine();
 
                     if (line.Substring((line.Length - 1)) == "/")
                     {
@@ -619,24 +671,24 @@ namespace rClone_Downloader
                     }
                 }
 
-                error = listProcess.StandardError.ReadToEnd();
+                error = searchProcess.StandardError.ReadToEnd();
 
-                listProcess.Close();
-                listProcess = null;
+                searchProcess.Close();
+                searchProcess = null;
             });
 
             return error;
         }
 
-        private async void SearchRClone()
+        private async void SearchRemote()
         {
             Write("Searching...");
 
             drivesList.Enabled = false;
             textBoxFilter.Enabled = false;
-            buttonGo.Enabled = false;
+            buttonSearch.Enabled = false;
 
-            listFiles.Items.Clear();
+            listRemoteFiles.Items.Clear();
 
             string error = await UpdateList();
 
@@ -652,7 +704,7 @@ namespace rClone_Downloader
                 back.SubItems.Add("");
                 back.ImageIndex = 3;
 
-                listFiles.Items.Add(back);
+                listRemoteFiles.Items.Add(back);
 
                 double total = 0;
                 foreach (string line in folders)
@@ -665,7 +717,7 @@ namespace rClone_Downloader
                     item.SubItems.Add(dateTime.ToString("MM/dd/yyyy hh:mm tt"));
                     item.ImageIndex = 1;
 
-                    listFiles.Items.Add(item);
+                    listRemoteFiles.Items.Add(item);
                 }
                 foreach (string line in files)
                 {
@@ -673,34 +725,34 @@ namespace rClone_Downloader
                     string date = split[1];
                     DateTime dateTime = DateTime.ParseExact(date, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
                     double sizeDouble = Int64.Parse(split[0]);
-                    string size = getSize(sizeDouble);
+                    string size = ConvertSize(sizeDouble);
 
                     ListViewItem item = new ListViewItem(split[2]);
                     item.SubItems.Add(dateTime.ToString("MM/dd/yyyy hh:mm tt"));
                     item.SubItems.Add(size);
                     item.ImageIndex = 0;
 
-                    listFiles.Items.Add(item);
+                    listRemoteFiles.Items.Add(item);
 
                     total = total+ sizeDouble;
                 }
 
-                Write("Folders: " + folders.Count + "    Files: " + listFiles.Items.Count + "    Total: " + getSize(total));
+                Write("Folders: " + folders.Count + "    Files: " + listRemoteFiles.Items.Count + "    Total: " + ConvertSize(total));
             }
 
             drivesList.Enabled = true;
             textBoxFilter.Enabled = true;
-            buttonGo.Enabled = true;
+            buttonSearch.Enabled = true;
 
-            listFiles.Focus();
-            listFiles.Items[1].Selected = true;
+            listRemoteFiles.Focus();
+            listRemoteFiles.Items[1].Selected = true;
         }
 
         private void SearchLocal(string selectedDirectory)
         {
             listLocalFiles.Items.Clear();
 
-            string[] split = textBoxDest.Text.Split('\\');
+            string[] split = textBoxLocal.Text.Split('\\');
 
             if (selectedDirectory == ".." && split.Length == 2 && split[1] == "")
             {
@@ -709,41 +761,35 @@ namespace rClone_Downloader
                     ListViewItem drive1 = new ListViewItem(dDrive.Name.Trim());
 
                     drive1.SubItems.Add("");
-                    drive1.SubItems.Add(getSize(dDrive.TotalSize));
+                    drive1.SubItems.Add(ConvertSize(dDrive.TotalSize));
                     drive1.ImageIndex = 2;
 
                     listLocalFiles.Items.Add(drive1);
                 }
 
-                textBoxDest.Text = "..";
-
-                Properties.Settings.Default.Destination = textBoxDest.Text;
-                Properties.Settings.Default.Save();
+                textBoxLocal.Text = "..";
 
                 return;
             }
 
             if (selectedDirectory == "..")
             {
-                DirectoryInfo parentDirectory = new DirectoryInfo(textBoxDest.Text).Parent;
+                DirectoryInfo parentDirectory = new DirectoryInfo(textBoxLocal.Text).Parent;
 
                 selectedDirectory = parentDirectory.FullName;
             }
             else
             {
-                if (textBoxDest.Text != "..")
+                if (textBoxLocal.Text != "..")
                 {
-                    if (selectedDirectory != textBoxDest.Text)
+                    if (selectedDirectory != textBoxLocal.Text)
                     {
-                        selectedDirectory = textBoxDest.Text + selectedDirectory + @"\";
+                        selectedDirectory = textBoxLocal.Text + selectedDirectory + @"\";
                     }
                 }
             }
 
-            textBoxDest.Text = selectedDirectory;
-
-            Properties.Settings.Default.Destination = textBoxDest.Text;
-            Properties.Settings.Default.Save();
+            textBoxLocal.Text = selectedDirectory;
 
             ListViewItem back = new ListViewItem("..");
 
@@ -782,54 +828,19 @@ namespace rClone_Downloader
 
                 ListViewItem item1 = new ListViewItem(fileInfo.Name);
                 item1.SubItems.Add(fileInfo.LastWriteTime.ToString("MM/dd/yyyy hh:mm tt"));
-                item1.SubItems.Add(getSize(fileInfo.Length));
+                item1.SubItems.Add(ConvertSize(fileInfo.Length));
                 item1.ImageIndex = 0;
 
                 listLocalFiles.Items.Add(item1);
             }
         }
 
-        private async Task<string> Download(string name, string destination, string direction)
+        private async Task<string> Download(string name, string destination)
         {
             string error = null;
 
             await Task.Run(() =>
             {
-                if(direction == "→")
-                {
-                    if (File.Exists(destination))
-                    {
-                        if (radioOverwrite.Checked)
-                        {
-                            File.Delete(destination);
-                        }
-                        else if (radioSkip.Checked)
-                        {
-                            return;
-                        }
-                        else if (radioPrompt.Checked)
-                        {
-                            DialogResult result = MessageBox.Show(destination + "\r\n File Already Exists. Overwrite?", "File Exists", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
-
-                            if (result == DialogResult.Cancel)
-                            {
-                                cancel = true;
-                                error = "Cancel";
-                                return;
-                            }
-                            else if (result == DialogResult.No)
-                            {
-                                error = "Skipped";
-                                return;
-                            }
-                            else if (result == DialogResult.Yes)
-                            {
-                                File.Delete(destination);
-                            }
-                        }
-                    }
-                }
-
                 downloadProcess = new Process
                 {
                     StartInfo = new ProcessStartInfo
@@ -843,14 +854,7 @@ namespace rClone_Downloader
                     }
                 };
 
-                if(direction == "→")
-                {
-                    downloadProcess.OutputDataReceived += (Object _sender, DataReceivedEventArgs _args) => ProcessOutput(_sender, _args, name + direction + destination);
-                } else
-                {
-                    downloadProcess.OutputDataReceived += (Object _sender, DataReceivedEventArgs _args) => ProcessOutput(_sender, _args, destination + direction + name);
-                }
-               
+                downloadProcess.OutputDataReceived += (Object _sender, DataReceivedEventArgs _args) => ProcessOutput(_sender, _args, name + " → " + destination);            
                 downloadProcess.Start();
                 downloadProcess.BeginOutputReadLine();
 
@@ -886,7 +890,7 @@ namespace rClone_Downloader
 
             List<ListViewItem> list = new List<ListViewItem>();
 
-            list.AddRange(listDownloads.Items.Cast<ListViewItem>());
+            list.AddRange(listQueue.Items.Cast<ListViewItem>());
 
             foreach (ListViewItem item in list)
             {
@@ -899,31 +903,54 @@ namespace rClone_Downloader
 
                 string operation = item.SubItems[0].Text;
 
-                ListViewItem test = listDownloads.FindItemWithText(operation);
+                ListViewItem test = listQueue.FindItemWithText(operation);
 
                 if (test == null || test.SubItems[1].Text != "Queued")
                 {
                     continue;
                 }
 
-                string fileName;
-                string destination;
-                string direction;
-                if(operation.Contains("→"))
+                string fileName = operation.Replace(" → ", ";").Split(';')[0];
+                string destination = operation.Replace(" → ", ";").Split(';')[1];
+
+                if(!Directory.Exists(fileName.Substring(0, 3)))
                 {
-                    fileName = operation.Split('→')[0];
-                    destination = operation.Split('→')[1];
-                    direction = "→";
-                } else
-                {
-                    fileName = operation.Split('←')[1];
-                    destination = operation.Split('←')[0];
-                    direction = "←";
+                    if (File.Exists(destination))
+                    {
+                        if (radioOverwrite.Checked)
+                        {
+                            File.Delete(destination);
+                        }
+                        else if (radioSkip.Checked)
+                        {
+                            return;
+                        }
+                        else if (radioPrompt.Checked)
+                        {
+                            DialogResult result = MessageBox.Show(destination + "\r\n File Already Exists. Overwrite?", "File Exists", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+
+                            if (result == DialogResult.Cancel)
+                            {
+                                cancel = true;
+                                UpdateListViewItem(operation, "Queued");
+                                continue;
+                            }
+                            else if (result == DialogResult.No)
+                            {
+                                UpdateListViewItem(operation, "Complete");
+                                continue;
+                            }
+                            else if (result == DialogResult.Yes)
+                            {
+                                File.Delete(destination);
+                            }
+                        }
+                    }
                 }
 
-                UpdateListViewItem(operation, "Initializing", "", "", "");
+                UpdateListViewItem(operation, "Initializing");
 
-                string error = await Download(fileName, destination, direction);
+                string error = await Download(fileName, destination);
 
                 if (error != "" && error != null)
                 {
@@ -939,10 +966,7 @@ namespace rClone_Downloader
                 {
                     UpdateListViewItem(operation, "Complete");
 
-                    if (operation.Contains("→"))
-                    {
-                        SearchLocal(textBoxDest.Text);
-                    } else
+                    if (Directory.Exists(fileName.Substring(0, 3)))
                     {
                         string[] split = fileName.Split('\\');
 
@@ -951,8 +975,11 @@ namespace rClone_Downloader
                         item1.SubItems.Add(item.SubItems[6].Text);
                         item1.ImageIndex = 0;
 
-                        listFiles.Items.Add(item1);
-                    }    
+                        listRemoteFiles.Items.Add(item1);
+                    } else
+                    {
+                        SearchLocal(textBoxLocal.Text);
+                    } 
                 }
             }
 
@@ -966,54 +993,82 @@ namespace rClone_Downloader
 
         private void UpdateListViewItem(string operation, string status, string progress, string speed, string eta)
         {
-            if (this.listDownloads.InvokeRequired)
+            if (this.listQueue.InvokeRequired)
             {
                 this.BeginInvoke(new MethodInvoker(() => {
-                    listDownloads.FindItemWithText(operation).SubItems[1].Text = status;
-                    listDownloads.FindItemWithText(operation).SubItems[2].Text = progress;
-                    listDownloads.FindItemWithText(operation).SubItems[3].Text = speed;
-                    listDownloads.FindItemWithText(operation).SubItems[4].Text = eta;
+                    listQueue.FindItemWithText(operation).SubItems[1].Text = status;
+                    listQueue.FindItemWithText(operation).SubItems[2].Text = progress;
+                    listQueue.FindItemWithText(operation).SubItems[3].Text = speed;
+                    listQueue.FindItemWithText(operation).SubItems[4].Text = eta;
                 }));
             }
             else
             {
-                listDownloads.FindItemWithText(operation).SubItems[1].Text = status;
-                listDownloads.FindItemWithText(operation).SubItems[2].Text = progress;
-                listDownloads.FindItemWithText(operation).SubItems[3].Text = speed;
-                listDownloads.FindItemWithText(operation).SubItems[4].Text = eta;
+                listQueue.FindItemWithText(operation).SubItems[1].Text = status;
+                listQueue.FindItemWithText(operation).SubItems[2].Text = progress;
+                listQueue.FindItemWithText(operation).SubItems[3].Text = speed;
+                listQueue.FindItemWithText(operation).SubItems[4].Text = eta;
             }
         }
 
         private void UpdateListViewItem(string operation, string status)
         {
-            if (this.listDownloads.InvokeRequired)
+            if (this.listQueue.InvokeRequired)
             {
                 this.BeginInvoke(new MethodInvoker(() => {
-                    listDownloads.FindItemWithText(operation).SubItems[1].Text = status;
-                    listDownloads.FindItemWithText(operation).SubItems[2].Text = "";
-                    listDownloads.FindItemWithText(operation).SubItems[3].Text = "";
-                    listDownloads.FindItemWithText(operation).SubItems[4].Text = "";
+                    listQueue.FindItemWithText(operation).SubItems[1].Text = status;
+                    listQueue.FindItemWithText(operation).SubItems[2].Text = "";
+                    listQueue.FindItemWithText(operation).SubItems[3].Text = "";
+                    listQueue.FindItemWithText(operation).SubItems[4].Text = "";
                 }));
             }
             else
             {
-                listDownloads.FindItemWithText(operation).SubItems[1].Text = status;
-                listDownloads.FindItemWithText(operation).SubItems[2].Text = "";
-                listDownloads.FindItemWithText(operation).SubItems[3].Text = "";
-                listDownloads.FindItemWithText(operation).SubItems[4].Text = "";
+                listQueue.FindItemWithText(operation).SubItems[1].Text = status;
+                listQueue.FindItemWithText(operation).SubItems[2].Text = "";
+                listQueue.FindItemWithText(operation).SubItems[3].Text = "";
+                listQueue.FindItemWithText(operation).SubItems[4].Text = "";
+            }
+        }
+        private void onListQueueColumnWidthChanging(object sender, ColumnWidthChangingEventArgs e)
+        {
+            if (e.ColumnIndex == 5 || e.ColumnIndex == 6)
+            {
+                e.Cancel = true;
+                e.NewWidth = 0;
             }
         }
 
         private void onClosing(object sender, FormClosingEventArgs e)
         {
-            if (listProcess != null)
+            if (searchProcess != null)
             {
-                listProcess.Close();
+                searchProcess.Close();
             }
             if (downloadProcess != null)
             {
                 downloadProcess.Close();
             }
+
+            if(textBoxFilter.Text != "Filter" && textBoxFilter.Text != "")
+            {
+                Properties.Settings.Default.Filter = textBoxFilter.Text;
+            }
+
+            Properties.Settings.Default.LocalPath = textBoxLocal.Text;
+
+            if(radioOverwrite.Checked)
+            {
+                Properties.Settings.Default.Overwrite = "Overwrite";
+            } else if(radioPrompt.Checked)
+            {
+                Properties.Settings.Default.Overwrite = "Prompt";
+            } else
+            {
+                Properties.Settings.Default.Overwrite = "Skip";
+            }
+
+            Properties.Settings.Default.Save();
         }
 
         private void ProcessOutput(object sendingProcess, DataReceivedEventArgs outLine, string operation)
@@ -1044,7 +1099,7 @@ namespace rClone_Downloader
             }
         }
 
-        private string getSize(double sizeDouble)
+        private string ConvertSize(double sizeDouble)
         {
             String size;
             if (sizeDouble < 1024)
@@ -1084,36 +1139,6 @@ namespace rClone_Downloader
             else
             {
                 log.Text = text;
-            }
-        }
-
-        private void onKeyDown(object sender, KeyEventArgs e)
-        {
-            if(e.KeyData == (Keys.A | Keys.Control))
-            {
-                listFiles.BeginUpdate();
-
-                for (int i = 0; i < listFiles.Items.Count; i++)
-                {
-                    foreach (ListViewItem item in listFiles.Items)
-                    {
-                        if(item.ImageIndex != 3)
-                        {
-                            item.Selected = true;
-                        }                       
-                    }
-                }
-                e.SuppressKeyPress = true;
-                listFiles.EndUpdate();
-            }
-        }
-
-        private void onWidthChanging(object sender, ColumnWidthChangingEventArgs e)
-        {
-            if(e.ColumnIndex == 5 || e.ColumnIndex == 6)
-            {
-                e.Cancel = true;
-                e.NewWidth = 0;
             }
         }
     }

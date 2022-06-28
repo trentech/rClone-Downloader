@@ -8,13 +8,22 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace rClone_Downloader
+namespace rClone_GUI
 {
     public partial class NameDialog : Form
     {
         public NameDialog()
         {
             InitializeComponent();
+
+            Screen screen = Screen.FromControl(this);
+            Rectangle workingArea = screen.WorkingArea;
+
+            Location = new Point
+            {
+                X = Math.Max(workingArea.X, workingArea.X + (workingArea.Width - Width) / 2),
+                Y = Math.Max(workingArea.Y, workingArea.Y + (workingArea.Height - Height) / 2)
+            };
 
             textBox1.SelectAll();
             textBox1.Focus();
