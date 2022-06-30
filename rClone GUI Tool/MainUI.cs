@@ -8,6 +8,8 @@ using System.Globalization;
 using System.Drawing;
 using System.Linq;
 using rClone_Wrapper;
+using IniParser;
+using IniParser.Model;
 
 namespace rClone_GUI
 {
@@ -25,9 +27,11 @@ namespace rClone_GUI
         private bool downloading = false;
         private bool cancelCopy = false;
 
+        private Config config = new Config();
+
         public MainUI(string rClone)
         {
-            AllocConsole();
+            //AllocConsole();
             InitializeComponent();
 
             Screen screen = Screen.FromControl(this);
@@ -39,9 +43,9 @@ namespace rClone_GUI
                 Y = Math.Max(workingArea.Y, workingArea.Y + (workingArea.Height - Height) / 2)
             };
 
-            string[] config = System.IO.File.ReadAllLines(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\rclone\rclone.conf");
+            string[] rCloneConfig = System.IO.File.ReadAllLines(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\rclone\rclone.conf");
 
-            foreach (string line in config)
+            foreach (string line in rCloneConfig)
             {
                 if(line.StartsWith("[") && line.EndsWith("]"))
                 {
@@ -57,12 +61,12 @@ namespace rClone_GUI
                 Close();
             }
 
-            if (Properties.Settings.Default.Filter != "")
+            if (config.Settings["Filter"] != "")
             {
-                textBoxFilter.Text = Properties.Settings.Default.Filter;
+                textBoxFilter.Text = config.Settings["Filter"];
             }
 
-            if (Properties.Settings.Default.LocalPath == "" || Properties.Settings.Default.LocalPath == ".." || !Directory.Exists(Properties.Settings.Default.LocalPath))
+            if (config.Settings["LocalPath"] == ".." || !Directory.Exists(config.Settings["LocalPath"]))
             {
                 foreach (var dDrive in DriveInfo.GetDrives())
                 {
@@ -79,33 +83,27 @@ namespace rClone_GUI
             }
             else
             {
-                textBoxLocal.Text = Properties.Settings.Default.LocalPath;
+                textBoxLocal.Text = config.Settings["LocalPath"];
                 SearchLocal(textBoxLocal.Text);
             }
 
-            if (Properties.Settings.Default.Overwrite == "" || Properties.Settings.Default.Overwrite == "Prompt")
+            if (config.Settings["Overwrite"] == "Prompt")
             {
                 radioSkip.Checked = false;
                 radioOverwrite.Checked = false;
                 radioPrompt.Checked = true;
             }
-            else if (Properties.Settings.Default.Overwrite == "Overwrite")
+            else if (config.Settings["Overwrite"] == "Overwrite")
             {
                 radioSkip.Checked = false;
                 radioOverwrite.Checked = true;
                 radioPrompt.Checked = false;
             }
-            else if (Properties.Settings.Default.Overwrite == "Skip")
+            else if (config.Settings["Overwrite"] == "Skip")
             {
                 radioSkip.Checked = true;
                 radioOverwrite.Checked = false;
                 radioPrompt.Checked = false;
-            }
-            else if (Properties.Settings.Default.Overwrite == "Prompt")
-            {
-                radioSkip.Checked = false;
-                radioOverwrite.Checked = false;
-                radioPrompt.Checked = true;
             }
 
             operations = new Operations(rClone);
@@ -326,24 +324,12 @@ namespace rClone_GUI
                         destination = textBoxLocal.Text + listLocalFiles.SelectedItems[0].SubItems[0].Text;
                     }
 
-                    string operation = (fileName + " → " + destination + @"\" + file.SubItems[0].Text).Replace(@"\\", @"\");
+                    string operation = "Copy: " + (fileName + " → " + destination + @"\" + file.SubItems[0].Text).Replace(@"\\", @"\");
 
-                    if (listQueue.FindItemWithText(operation) == null)
-                    {
-                        ListViewItem item = new ListViewItem(operation);
-                        item.SubItems.Add("Queued");
-                        item.SubItems.Add("");
-                        item.SubItems.Add("");
-                        item.SubItems.Add("");
-                        item.SubItems.Add("");
-                        item.SubItems.Add("");
-                        item.SubItems.Add((file.ImageIndex == 1).ToString());
-
-                        listQueue.Items.Add(item);
-                    }
+                    AddToQueue(operation, "Queued", (file.ImageIndex == 1));
                 }
 
-                DownloadFiles();
+                ProcessQueue();
             }
         }
 
@@ -415,24 +401,12 @@ namespace rClone_GUI
                         destination = drivesList.SelectedItem.ToString() + ":" + textBoxRemote.Text + listRemoteFiles.SelectedItems[0].SubItems[0].Text;
                     }
 
-                    string operation = (fileName + " → " + destination + "/" + file.SubItems[0].Text).Replace("//", "/").Replace(@"\\", @"\");
+                    string operation = "Copy: " + (fileName + " → " + destination + "/" + file.SubItems[0].Text).Replace("//", "/").Replace(@"\\", @"\");
 
-                    if (listQueue.FindItemWithText(operation) == null)
-                    {
-                        ListViewItem item = new ListViewItem(operation);
-                        item.SubItems.Add("Queued");
-                        item.SubItems.Add("");
-                        item.SubItems.Add("");
-                        item.SubItems.Add("");
-                        item.SubItems.Add(file.SubItems[1].Text);
-                        item.SubItems.Add(file.SubItems[2].Text);
-                        item.SubItems.Add((file.ImageIndex == 1).ToString());
-
-                        listQueue.Items.Add(item);
-                    }
+                    AddToQueue(operation, "Queued", file.SubItems[1].Text, file.SubItems[2].Text, (file.ImageIndex == 1));
                 }
 
-                DownloadFiles();
+                ProcessQueue();
             }
         }
 
@@ -592,23 +566,9 @@ namespace rClone_GUI
                     destination = destination.Substring(0, destination.Length - 1);
                 }
 
-                string operation = (source + " == " + destination).Replace(@"\\", @"\");
+                string operation = "Sync: " + (source + " == " + destination).Replace(@"\\", @"\");
 
-                if (listQueue.FindItemWithText(operation) == null)
-                {
-                    ListViewItem item = new ListViewItem(operation);
-                    item.SubItems.Add("Queued");
-                    item.SubItems.Add("");
-                    item.SubItems.Add("");
-                    item.SubItems.Add("");
-                    item.SubItems.Add("");
-                    item.SubItems.Add("");
-                    item.SubItems.Add("true");
-
-                    listQueue.Items.Add(item);
-
-                    DownloadFiles();
-                }
+                AddToQueue(operation, "Queued", true);
             }
         }
 
@@ -628,7 +588,7 @@ namespace rClone_GUI
                 {
                     string status = file.SubItems[1].Text;
 
-                    if (status.StartsWith("Queued") || status.StartsWith("Complete") || status.StartsWith("Error:"))
+                    if (status.StartsWith("Queued") || status.StartsWith("Complete") || status.StartsWith("Error"))
                     {
                         listQueue.Items.Remove(file);
                     }
@@ -640,20 +600,20 @@ namespace rClone_GUI
                 {
                     string status = item.SubItems[1].Text;
 
-                    if (status.StartsWith("Queued") || status.StartsWith("Complete") || status.StartsWith("Error:"))
+                    if (status.StartsWith("Queued") || status.StartsWith("Complete") || status.StartsWith("Error"))
                     {
                         listQueue.Items.Remove(item);
                     }
                 }
             }
-            else if (e.ClickedItem.Text == "Cancel Downloads")
+            else if (e.ClickedItem.Text == "Cancel")
             {
                 cancelCopy = !cancelCopy;
                 downloading = false;
             }
-            else if (e.ClickedItem.Text == "Start Downloads")
+            else if (e.ClickedItem.Text == "Process Queue")
             {
-                DownloadFiles();
+                ProcessQueue();
             }
         }
 
@@ -824,7 +784,7 @@ namespace rClone_GUI
         }
 
         bool run = false;
-        private async void DownloadFiles()
+        private async void ProcessQueue()
         {
             if (downloading)
             {
@@ -862,19 +822,21 @@ namespace rClone_GUI
                 string fileName;
                 string destination;
 
-                if (operation.Contains(" == "))
+                if (operation.StartsWith("Sync:"))
                 {
-                    fileName = operation.Replace(" == ", ";").Split(';')[0];
-                    destination = operation.Replace(" == ", ";").Split(';')[1];
+                    string[] split = operation.Replace("Sync: ", "").Replace(" == ", ";").Split(';');
+                    fileName = split[0];
+                    destination = split[1];
 
                     UpdateQueueItem(operation, "Initializing");
 
                     error = await operations.Sync(this, fileName, destination);
                 }
-                else
+                else if(operation.StartsWith("Copy:"))
                 {
-                    fileName = operation.Replace(" → ", ";").Split(';')[0];
-                    destination = operation.Replace(" → ", ";").Split(';')[1];
+                    string[] split = operation.Replace("Copy:", "").Replace(" → ", ";").Split(';');
+                    fileName = split[0];
+                    destination = split[1];
 
                     if (!Directory.Exists(fileName.Substring(0, 3)))
                     {
@@ -914,6 +876,9 @@ namespace rClone_GUI
                     UpdateQueueItem(operation, "Initializing");
 
                     error = await operations.Copy(this, fileName, destination, Boolean.Parse(item.SubItems[7].Text));
+                } else
+                {
+                    throw new Exception("Something isn't right");
                 }
 
                 if (cancelCopy)
@@ -922,7 +887,7 @@ namespace rClone_GUI
                 }
                 else if (error != "" && error != null)
                 {
-                    UpdateQueueItem(operation, error);
+                    UpdateQueueItem(operation, "Error: " + error);
                 }
                 else
                 {
@@ -950,8 +915,71 @@ namespace rClone_GUI
 
             if (run)
             {
-                DownloadFiles();
+                ProcessQueue();
             }
+        }
+
+        private void onListQueueColumnWidthChanging(object sender, ColumnWidthChangingEventArgs e)
+        {
+            if (e.ColumnIndex == 5 || e.ColumnIndex == 6)
+            {
+                e.Cancel = true;
+                e.NewWidth = 0;
+            }
+        }
+
+        private void onClosing(object sender, FormClosingEventArgs e)
+        {
+            operations.Kill();
+
+            IniData data = new IniData();
+
+            data.Sections.AddSection("Settings");
+
+            data["Settings"].AddKey("LocalPath", textBoxLocal.Text);
+
+            if (textBoxFilter.Text == "Filter")
+            {
+                data["Settings"].AddKey("Filter", "");
+            } else
+            {
+                data["Settings"].AddKey("Filter", textBoxFilter.Text);
+            }
+
+            if(radioOverwrite.Checked)
+            {
+                data["Settings"].AddKey("Overwrite", "Overwrite");
+            } else if(radioPrompt.Checked)
+            {
+                data["Settings"].AddKey("Overwrite", "Prompt");
+            } else
+            {
+                data["Settings"].AddKey("Overwrite", "Skip");
+            }
+
+            FileIniDataParser parser = new FileIniDataParser();
+            parser.WriteFile(Config.GetPath(), data);
+        }
+        private void AddToQueue(string operation, string status, string size, string date, bool isDirectory)
+        {
+            if (listQueue.FindItemWithText(operation) == null)
+            {
+                ListViewItem item = new ListViewItem(operation);
+                item.SubItems.Add(status);
+                item.SubItems.Add("");
+                item.SubItems.Add("");
+                item.SubItems.Add("");
+                item.SubItems.Add(size);
+                item.SubItems.Add(date);
+                item.SubItems.Add(isDirectory.ToString());
+
+                listQueue.Items.Add(item);
+            }
+        }
+
+        private void AddToQueue(string operation, string status, bool isDirectory)
+        {
+            AddToQueue(operation, status, "", "", isDirectory);
         }
 
         private void UpdateQueueItem(string operation, string status, string progress, string speed, string eta)
@@ -992,39 +1020,6 @@ namespace rClone_GUI
                 listQueue.FindItemWithText(operation).SubItems[3].Text = "";
                 listQueue.FindItemWithText(operation).SubItems[4].Text = "";
             }
-        }
-        private void onListQueueColumnWidthChanging(object sender, ColumnWidthChangingEventArgs e)
-        {
-            if (e.ColumnIndex == 5 || e.ColumnIndex == 6)
-            {
-                e.Cancel = true;
-                e.NewWidth = 0;
-            }
-        }
-
-        private void onClosing(object sender, FormClosingEventArgs e)
-        {
-            operations.Kill();
-
-            if(textBoxFilter.Text != "Filter" && textBoxFilter.Text != "")
-            {
-                Properties.Settings.Default.Filter = textBoxFilter.Text;
-            }
-
-            Properties.Settings.Default.LocalPath = textBoxLocal.Text;
-
-            if(radioOverwrite.Checked)
-            {
-                Properties.Settings.Default.Overwrite = "Overwrite";
-            } else if(radioPrompt.Checked)
-            {
-                Properties.Settings.Default.Overwrite = "Prompt";
-            } else
-            {
-                Properties.Settings.Default.Overwrite = "Skip";
-            }
-
-            Properties.Settings.Default.Save();
         }
 
         private string ConvertSize(double sizeDouble)
@@ -1094,7 +1089,7 @@ namespace rClone_GUI
                 {                
                     string stats = line.Data.Split(':')[2].TrimStart();
                     string[] split = stats.Split(',');
-                    UpdateQueueItem(name + " == " + destination, "Downloading", split[0].TrimStart(), split[2].TrimStart(), split[3].Replace(" ETA ", ""));
+                    UpdateQueueItem("Sync: " + name + " == " + destination, "Syncing", split[0].TrimStart(), split[2].TrimStart(), split[3].Replace(" ETA ", ""));
                 }
             }
         }
@@ -1123,7 +1118,7 @@ namespace rClone_GUI
                 {
                     string stats = line.Data.Split(':')[2].TrimStart();
                     string[] split = stats.Split(',');
-                    UpdateQueueItem(name + " → " + destination, "Downloading", split[0].TrimStart(), split[2].TrimStart(), split[3].Replace(" ETA ", ""));
+                    UpdateQueueItem("Copy: " + name + " → " + destination, "Downloading", split[0].TrimStart(), split[2].TrimStart(), split[3].Replace(" ETA ", ""));
                 }
             }
         }
@@ -1156,7 +1151,7 @@ namespace rClone_GUI
                     string stats = split[2].TrimStart();
                     string[] split2 = stats.Split(',');
 
-                    UpdateQueueItem(name + " → " + destination, "Downloading", split2[0].TrimStart(), split2[2].TrimStart(), split2[3].Replace(" ETA ", ""));
+                    UpdateQueueItem("Copy: " + name + " → " + destination, "Downloading", split2[0].TrimStart(), split2[2].TrimStart(), split2[3].Replace(" ETA ", ""));
                 } 
             }
         }
@@ -1182,5 +1177,7 @@ namespace rClone_GUI
         {
             throw new NotImplementedException();
         }
+
+
     }
 }

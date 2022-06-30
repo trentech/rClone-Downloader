@@ -48,6 +48,7 @@ namespace rClone_GUI
             this.refreshToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.newFolderToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.syncToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.imageList = new System.Windows.Forms.ImageList(this.components);
             this.listQueue = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -73,14 +74,13 @@ namespace rClone_GUI
             this.refreshToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.syncToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel4 = new System.Windows.Forms.Panel();
             this.panel1 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.panel5 = new System.Windows.Forms.Panel();
-            this.syncToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.syncToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.panelLog.SuspendLayout();
             this.contextMenuRemote.SuspendLayout();
             this.contextMenuQueue.SuspendLayout();
@@ -287,6 +287,12 @@ namespace rClone_GUI
             this.newFolderToolStripMenuItem1.Size = new System.Drawing.Size(134, 22);
             this.newFolderToolStripMenuItem1.Text = "New Folder";
             // 
+            // syncToolStripMenuItem1
+            // 
+            this.syncToolStripMenuItem1.Name = "syncToolStripMenuItem1";
+            this.syncToolStripMenuItem1.Size = new System.Drawing.Size(134, 22);
+            this.syncToolStripMenuItem1.Text = "Sync";
+            // 
             // imageList
             // 
             this.imageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList.ImageStream")));
@@ -366,32 +372,32 @@ namespace rClone_GUI
             this.cancelToolStripMenuItem,
             this.startStripMenuItem1});
             this.contextMenuQueue.Name = "contextMenuStrip1";
-            this.contextMenuQueue.Size = new System.Drawing.Size(173, 92);
+            this.contextMenuQueue.Size = new System.Drawing.Size(181, 114);
             this.contextMenuQueue.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.onListQueueContextMenuClick);
             // 
             // removeToolStripMenuItem
             // 
             this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            this.removeToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.removeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.removeToolStripMenuItem.Text = "Remove";
             // 
             // clearToolStripMenuItem
             // 
             this.clearToolStripMenuItem.Name = "clearToolStripMenuItem";
-            this.clearToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.clearToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.clearToolStripMenuItem.Text = "Clear";
             // 
             // cancelToolStripMenuItem
             // 
             this.cancelToolStripMenuItem.Name = "cancelToolStripMenuItem";
-            this.cancelToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
-            this.cancelToolStripMenuItem.Text = "Cancel Downloads";
+            this.cancelToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.cancelToolStripMenuItem.Text = "Cancel";
             // 
             // startStripMenuItem1
             // 
             this.startStripMenuItem1.Name = "startStripMenuItem1";
-            this.startStripMenuItem1.Size = new System.Drawing.Size(172, 22);
-            this.startStripMenuItem1.Text = "Start Downloads";
+            this.startStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.startStripMenuItem1.Text = "Process Queue";
             // 
             // drivesList
             // 
@@ -501,6 +507,12 @@ namespace rClone_GUI
             this.newFolderToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
             this.newFolderToolStripMenuItem.Text = "New Folder";
             // 
+            // syncToolStripMenuItem
+            // 
+            this.syncToolStripMenuItem.Name = "syncToolStripMenuItem";
+            this.syncToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.syncToolStripMenuItem.Text = "Sync";
+            // 
             // panel4
             // 
             this.panel4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -592,18 +604,6 @@ namespace rClone_GUI
             this.panel5.Name = "panel5";
             this.panel5.Size = new System.Drawing.Size(570, 308);
             this.panel5.TabIndex = 1;
-            // 
-            // syncToolStripMenuItem
-            // 
-            this.syncToolStripMenuItem.Name = "syncToolStripMenuItem";
-            this.syncToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
-            this.syncToolStripMenuItem.Text = "Sync";
-            // 
-            // syncToolStripMenuItem1
-            // 
-            this.syncToolStripMenuItem1.Name = "syncToolStripMenuItem1";
-            this.syncToolStripMenuItem1.Size = new System.Drawing.Size(134, 22);
-            this.syncToolStripMenuItem1.Text = "Sync";
             // 
             // MainUI
             // 
