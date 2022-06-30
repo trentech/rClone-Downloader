@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32526.322
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rClone GUI Tool", "rClone GUI Tool\rClone GUI Tool.csproj", "{E446999D-479B-4A8E-B954-21783329652F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rClone-Wrapper", "rClone-Wrapper\rClone-Wrapper.csproj", "{D5CFADE1-E836-4F38-BD13-C232E8DFF7E9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		No Run|Any CPU = No Run|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E446999D-479B-4A8E-B954-21783329652F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E446999D-479B-4A8E-B954-21783329652F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E446999D-479B-4A8E-B954-21783329652F}.No Run|Any CPU.ActiveCfg = Release|Any CPU
+		{E446999D-479B-4A8E-B954-21783329652F}.No Run|Any CPU.Build.0 = Release|Any CPU
+		{E446999D-479B-4A8E-B954-21783329652F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E446999D-479B-4A8E-B954-21783329652F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5CFADE1-E836-4F38-BD13-C232E8DFF7E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5CFADE1-E836-4F38-BD13-C232E8DFF7E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5CFADE1-E836-4F38-BD13-C232E8DFF7E9}.No Run|Any CPU.ActiveCfg = Release|Any CPU
+		{D5CFADE1-E836-4F38-BD13-C232E8DFF7E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5CFADE1-E836-4F38-BD13-C232E8DFF7E9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6D04614C-E8AA-4188-A6A5-F7E3C8D890EA}
+	EndGlobalSection
+EndGlobal

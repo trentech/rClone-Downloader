@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{E446999D-479B-4A8E-B954-21783329652F}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>rClone_GUI</RootNamespace>
     <AssemblyName>rClone GUI Tool</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
@@ -35,9 +35,7 @@
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-  </PropertyGroup>
+  <PropertyGroup />
   <PropertyGroup>
     <ApplicationIcon>rclone.ico</ApplicationIcon>
   </PropertyGroup>
@@ -52,7 +50,6 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -69,7 +66,6 @@
     <Compile Include="NameDialog.Designer.cs">
       <DependentUpon>NameDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Operation.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UIStart.cs">
@@ -116,6 +112,12 @@
     <Content Include="rclone.ico" />
     <None Include="Resources\file_icon.png" />
     <None Include="Resources\folder_icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\rClone-Wrapper\rClone-Wrapper.csproj">
+      <Project>{d5cfade1-e836-4f38-bd13-c232e8dff7e9}</Project>
+      <Name>rClone-Wrapper</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

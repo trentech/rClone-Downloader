@@ -44,7 +44,11 @@ namespace rClone_GUI
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader10 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
+            this.contextMenuRemote = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.refreshToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.newFolderToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.imageList = new System.Windows.Forms.ImageList(this.components);
             this.listQueue = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -75,11 +79,10 @@ namespace rClone_GUI
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.panel5 = new System.Windows.Forms.Panel();
-            this.contextMenuRemote = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.refreshToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.deleteToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.newFolderToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.syncToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.syncToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.panelLog.SuspendLayout();
+            this.contextMenuRemote.SuspendLayout();
             this.contextMenuQueue.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -95,7 +98,6 @@ namespace rClone_GUI
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
             this.panel5.SuspendLayout();
-            this.contextMenuRemote.SuspendLayout();
             this.SuspendLayout();
             // 
             // textBoxRemote
@@ -229,7 +231,7 @@ namespace rClone_GUI
             this.listRemoteFiles.Margin = new System.Windows.Forms.Padding(0);
             this.listRemoteFiles.Name = "listRemoteFiles";
             this.listRemoteFiles.Size = new System.Drawing.Size(572, 308);
-            this.listRemoteFiles.SmallImageList = this.imageList1;
+            this.listRemoteFiles.SmallImageList = this.imageList;
             this.listRemoteFiles.TabIndex = 0;
             this.listRemoteFiles.TabStop = false;
             this.listRemoteFiles.UseCompatibleStateImageBehavior = false;
@@ -256,14 +258,43 @@ namespace rClone_GUI
             this.columnHeader4.Text = "Size";
             this.columnHeader4.Width = 80;
             // 
-            // imageList1
+            // contextMenuRemote
             // 
-            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
-            this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
-            this.imageList1.Images.SetKeyName(0, "file_icon.png");
-            this.imageList1.Images.SetKeyName(1, "folder_icon.png");
-            this.imageList1.Images.SetKeyName(2, "drive_icon.png");
-            this.imageList1.Images.SetKeyName(3, "back_icon.png");
+            this.contextMenuRemote.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.refreshToolStripMenuItem1,
+            this.deleteToolStripMenuItem1,
+            this.newFolderToolStripMenuItem1,
+            this.syncToolStripMenuItem1});
+            this.contextMenuRemote.Name = "contextMenuRemote";
+            this.contextMenuRemote.Size = new System.Drawing.Size(135, 92);
+            this.contextMenuRemote.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.onListRemoteContextMenuClick);
+            // 
+            // refreshToolStripMenuItem1
+            // 
+            this.refreshToolStripMenuItem1.Name = "refreshToolStripMenuItem1";
+            this.refreshToolStripMenuItem1.Size = new System.Drawing.Size(134, 22);
+            this.refreshToolStripMenuItem1.Text = "Refresh";
+            // 
+            // deleteToolStripMenuItem1
+            // 
+            this.deleteToolStripMenuItem1.Name = "deleteToolStripMenuItem1";
+            this.deleteToolStripMenuItem1.Size = new System.Drawing.Size(134, 22);
+            this.deleteToolStripMenuItem1.Text = "Delete";
+            // 
+            // newFolderToolStripMenuItem1
+            // 
+            this.newFolderToolStripMenuItem1.Name = "newFolderToolStripMenuItem1";
+            this.newFolderToolStripMenuItem1.Size = new System.Drawing.Size(134, 22);
+            this.newFolderToolStripMenuItem1.Text = "New Folder";
+            // 
+            // imageList
+            // 
+            this.imageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList.ImageStream")));
+            this.imageList.TransparentColor = System.Drawing.Color.Transparent;
+            this.imageList.Images.SetKeyName(0, "file_icon.png");
+            this.imageList.Images.SetKeyName(1, "folder_icon.png");
+            this.imageList.Images.SetKeyName(2, "drive_icon.png");
+            this.imageList.Images.SetKeyName(3, "back_icon.png");
             // 
             // listQueue
             // 
@@ -416,7 +447,7 @@ namespace rClone_GUI
             this.listLocalFiles.Location = new System.Drawing.Point(0, 0);
             this.listLocalFiles.Name = "listLocalFiles";
             this.listLocalFiles.Size = new System.Drawing.Size(570, 308);
-            this.listLocalFiles.SmallImageList = this.imageList1;
+            this.listLocalFiles.SmallImageList = this.imageList;
             this.listLocalFiles.TabIndex = 0;
             this.listLocalFiles.UseCompatibleStateImageBehavior = false;
             this.listLocalFiles.View = System.Windows.Forms.View.Details;
@@ -446,9 +477,10 @@ namespace rClone_GUI
             this.contextMenuLocal.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.refreshToolStripMenuItem,
             this.deleteToolStripMenuItem,
-            this.newFolderToolStripMenuItem});
+            this.newFolderToolStripMenuItem,
+            this.syncToolStripMenuItem});
             this.contextMenuLocal.Name = "contextMenuStrip1";
-            this.contextMenuLocal.Size = new System.Drawing.Size(135, 70);
+            this.contextMenuLocal.Size = new System.Drawing.Size(135, 92);
             this.contextMenuLocal.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.onListLocalContextMenuClick);
             // 
             // refreshToolStripMenuItem
@@ -561,33 +593,17 @@ namespace rClone_GUI
             this.panel5.Size = new System.Drawing.Size(570, 308);
             this.panel5.TabIndex = 1;
             // 
-            // contextMenuRemote
+            // syncToolStripMenuItem
             // 
-            this.contextMenuRemote.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.refreshToolStripMenuItem1,
-            this.deleteToolStripMenuItem1,
-            this.newFolderToolStripMenuItem1});
-            this.contextMenuRemote.Name = "contextMenuRemote";
-            this.contextMenuRemote.Size = new System.Drawing.Size(135, 70);
-            this.contextMenuRemote.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.onListRemoteContextMenuClick);
+            this.syncToolStripMenuItem.Name = "syncToolStripMenuItem";
+            this.syncToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.syncToolStripMenuItem.Text = "Sync";
             // 
-            // refreshToolStripMenuItem1
+            // syncToolStripMenuItem1
             // 
-            this.refreshToolStripMenuItem1.Name = "refreshToolStripMenuItem1";
-            this.refreshToolStripMenuItem1.Size = new System.Drawing.Size(134, 22);
-            this.refreshToolStripMenuItem1.Text = "Refresh";
-            // 
-            // deleteToolStripMenuItem1
-            // 
-            this.deleteToolStripMenuItem1.Name = "deleteToolStripMenuItem1";
-            this.deleteToolStripMenuItem1.Size = new System.Drawing.Size(134, 22);
-            this.deleteToolStripMenuItem1.Text = "Delete";
-            // 
-            // newFolderToolStripMenuItem1
-            // 
-            this.newFolderToolStripMenuItem1.Name = "newFolderToolStripMenuItem1";
-            this.newFolderToolStripMenuItem1.Size = new System.Drawing.Size(134, 22);
-            this.newFolderToolStripMenuItem1.Text = "New Folder";
+            this.syncToolStripMenuItem1.Name = "syncToolStripMenuItem1";
+            this.syncToolStripMenuItem1.Size = new System.Drawing.Size(134, 22);
+            this.syncToolStripMenuItem1.Text = "Sync";
             // 
             // MainUI
             // 
@@ -605,6 +621,7 @@ namespace rClone_GUI
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.onClosing);
             this.panelLog.ResumeLayout(false);
             this.panelLog.PerformLayout();
+            this.contextMenuRemote.ResumeLayout(false);
             this.contextMenuQueue.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
@@ -623,7 +640,6 @@ namespace rClone_GUI
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
             this.splitContainer3.ResumeLayout(false);
             this.panel5.ResumeLayout(false);
-            this.contextMenuRemote.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -650,7 +666,7 @@ namespace rClone_GUI
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ColumnHeader columnHeader10;
-        private System.Windows.Forms.ImageList imageList1;
+        private System.Windows.Forms.ImageList imageList;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel panel4;
         private System.Windows.Forms.Panel panel3;
@@ -677,6 +693,8 @@ namespace rClone_GUI
         private System.Windows.Forms.ToolStripMenuItem refreshToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem newFolderToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem syncToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem syncToolStripMenuItem;
     }
 }
 
