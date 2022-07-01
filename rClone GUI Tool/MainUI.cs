@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Globalization;
 using System.Drawing;
 using System.Linq;
 using rClone_Wrapper;
-using IniParser;
 using IniParser.Model;
+using IniParser;
 
 namespace rClone_GUI
 {
@@ -520,6 +519,20 @@ namespace rClone_GUI
                     SearchLocal(textBoxLocal.Text);
                 }
             }
+            else if (e.ClickedItem.Text == "Sync")
+            {
+                string source = drivesList.SelectedItem.ToString() + ":" + textBoxRemote.Text;
+                string destination = textBoxLocal.Text;
+
+                if (destination.EndsWith(@"\"))
+                {
+                    destination = destination.Substring(0, destination.Length - 1);
+                }
+
+                string operation = "Sync: " + (source + " == " + destination).Replace(@"\\", @"\");
+
+                AddToQueue(operation, "Queued", true);
+            }
         }
 
         private void onListRemoteContextMenuClick(object sender, ToolStripItemClickedEventArgs e)
@@ -541,8 +554,21 @@ namespace rClone_GUI
                 {
                     foreach (ListViewItem item in listRemoteFiles.SelectedItems)
                     {
-                        // ADD LOGIC
+                        string fileName = textBoxLocal.Text + @"\" + item.SubItems[0].Text;
+
+                        string operation;
+                        if (item.ImageIndex == 1)
+                        {
+                            operation = "Purge: " + (fileName).Replace("//", "/").Replace(@"\\", @"\");
+                        } else
+                        {
+                            operation = "Delete: " + (fileName).Replace("//", "/").Replace(@"\\", @"\");
+                        }
+
+                        AddToQueue(operation, "Queued", (item.ImageIndex == 1));
                     }
+
+                    ProcessQueue();
                 }
             }
             else if (e.ClickedItem.Text == "New Folder")
@@ -834,7 +860,7 @@ namespace rClone_GUI
                 }
                 else if(operation.StartsWith("Copy:"))
                 {
-                    string[] split = operation.Replace("Copy:", "").Replace(" → ", ";").Split(';');
+                    string[] split = operation.Replace("Copy: ", "").Replace(" → ", ";").Split(';');
                     fileName = split[0];
                     destination = split[1];
 
@@ -876,7 +902,15 @@ namespace rClone_GUI
                     UpdateQueueItem(operation, "Initializing");
 
                     error = await operations.Copy(this, fileName, destination, Boolean.Parse(item.SubItems[7].Text));
-                } else
+                } else if(operation.StartsWith("Delete:")) 
+                {
+                    fileName = operation.Replace("Delete: ", "");
+
+                    UpdateQueueItem(operation, "Initializing");
+
+                    error = await operations.DeleteFile(fileName);
+                }
+                else
                 {
                     throw new Exception("Something isn't right");
                 }
