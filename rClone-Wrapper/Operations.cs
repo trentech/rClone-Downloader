@@ -178,7 +178,7 @@ public class Operations
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = Client,
-                    Arguments = "Purge \"" + name + "\" --progress",
+                    Arguments = "purge \"" + name + "\" --progress",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,

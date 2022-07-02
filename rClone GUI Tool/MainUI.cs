@@ -323,7 +323,7 @@ namespace rClone_GUI
                         destination = textBoxLocal.Text + listLocalFiles.SelectedItems[0].SubItems[0].Text;
                     }
 
-                    string operation = "Copy: " + (fileName + " → " + destination + @"\" + file.SubItems[0].Text).Replace(@"\\", @"\");
+                    string operation = "[COPY]   " + (fileName + " → " + destination + @"\" + file.SubItems[0].Text).Replace(@"\\", @"\");
 
                     AddToQueue(operation, "Queued", (file.ImageIndex == 1));
                 }
@@ -400,7 +400,7 @@ namespace rClone_GUI
                         destination = drivesList.SelectedItem.ToString() + ":" + textBoxRemote.Text + listRemoteFiles.SelectedItems[0].SubItems[0].Text;
                     }
 
-                    string operation = "Copy: " + (fileName + " → " + destination + "/" + file.SubItems[0].Text).Replace("//", "/").Replace(@"\\", @"\");
+                    string operation = "[COPY]   " + (fileName + " → " + destination + "/" + file.SubItems[0].Text).Replace("//", "/").Replace(@"\\", @"\");
 
                     AddToQueue(operation, "Queued", file.SubItems[1].Text, file.SubItems[2].Text, (file.ImageIndex == 1));
                 }
@@ -529,7 +529,7 @@ namespace rClone_GUI
                     destination = destination.Substring(0, destination.Length - 1);
                 }
 
-                string operation = "Sync: " + (destination + " == " + source).Replace(@"\\", @"\");
+                string operation = "[SYNC]   " + (destination + " == " + source).Replace(@"\\", @"\");
 
                 AddToQueue(operation, "Queued", true);
 
@@ -561,10 +561,10 @@ namespace rClone_GUI
                         string operation;
                         if (item.ImageIndex == 1)
                         {
-                            operation = "Purge: " + (fileName).Replace("//", "/").Replace(@"\\", @"\");
+                            operation = "[PURGE]  " + (fileName).Replace("//", "/").Replace(@"\\", @"\");
                         } else
                         {
-                            operation = "Delete: " + (fileName).Replace("//", "/").Replace(@"\\", @"\");
+                            operation = "[DELETE] " + (fileName).Replace("//", "/").Replace(@"\\", @"\");
                         }
 
                         AddToQueue(operation, "Queued", (item.ImageIndex == 1));
@@ -594,7 +594,7 @@ namespace rClone_GUI
                     destination = destination.Substring(0, destination.Length - 1);
                 }
 
-                string operation = "Sync: " + (source + " == " + destination).Replace(@"\\", @"\");
+                string operation = "[SYNC]   " + (source + " == " + destination).Replace(@"\\", @"\");
 
                 AddToQueue(operation, "Queued", true);
 
@@ -868,9 +868,9 @@ namespace rClone_GUI
                 string fileName;
                 string destination;
 
-                if (operation.StartsWith("Sync:"))
+                if (operation.StartsWith("[SYNC]"))
                 {
-                    string[] split = operation.Replace("Sync: ", "").Replace(" == ", ";").Split(';');
+                    string[] split = operation.Replace("[SYNC]   ", "").Replace(" == ", ";").Split(';');
                     fileName = split[0];
                     destination = split[1];
 
@@ -880,9 +880,9 @@ namespace rClone_GUI
 
                     SearchRemote();
                 }
-                else if(operation.StartsWith("Copy:"))
+                else if (operation.StartsWith("[COPY]"))
                 {
-                    string[] split = operation.Replace("Copy: ", "").Replace(" → ", ";").Split(';');
+                    string[] split = operation.Replace("[COPY]   ", "").Replace(" → ", ";").Split(';');
                     fileName = split[0];
                     destination = split[1];
 
@@ -940,20 +940,32 @@ namespace rClone_GUI
                     {
                         SearchLocal(textBoxLocal.Text);
                     }
-                } else if(operation.StartsWith("Delete:")) 
+                }
+                else if (operation.StartsWith("[DELETE]"))
                 {
-                    fileName = operation.Replace("Delete: ", "");
+                    fileName = operation.Replace("[DELETE] ", "");
 
                     UpdateQueueItem(operation, "Initializing");
 
                     error = await operations.DeleteFile(fileName);
 
-                    fileName = fileName.Substring(fileName.LastIndexOf('/') + 1);
-
-                    if(listRemoteFiles.FindItemWithText(fileName) != null)
+                    if (error == null || error == "")
                     {
-                        listRemoteFiles.FindItemWithText(fileName).Remove();
+                        fileName = fileName.Substring(fileName.LastIndexOf('/') + 1);
+
+                        if (listRemoteFiles.FindItemWithText(fileName) != null)
+                        {
+                            listRemoteFiles.FindItemWithText(fileName).Remove();
+                        }
                     }
+                }
+                else if (operation.StartsWith("[PURGE]"))
+                {
+                    fileName = operation.Replace("[PURGE]  ", "");
+
+                    error = await operations.Purge(this, fileName);
+
+                    SearchRemote();
                 }
                 else
                 {
@@ -964,7 +976,7 @@ namespace rClone_GUI
                 {
                     UpdateQueueItem(operation, "Queued");
                 }
-                else if (error != "" && error != null)
+                else if (error != null && error != "")
                 {
                     UpdateQueueItem(operation, "Error: " + error);
                 }
@@ -1155,7 +1167,7 @@ namespace rClone_GUI
                 {
                     string stats = line.Data.Substring(line.Data.IndexOf("-Transferred:")).Replace("-Transferred:", "").TrimStart();
                     string[] split = stats.Split(',');
-                    UpdateQueueItem("Sync: " + name + " == " + destination, "Syncing", split[0].TrimStart(), split[2].TrimStart(), split[3].Replace(" ETA ", ""));
+                    UpdateQueueItem("[SYNC]   " + name + " == " + destination, "Syncing", split[0].TrimStart(), split[2].TrimStart(), split[3].Replace(" ETA ", ""));
                 }
             }
         }
@@ -1184,7 +1196,7 @@ namespace rClone_GUI
                 {
                     string stats = line.Data.Split(':')[2].TrimStart();
                     string[] split = stats.Split(',');
-                    UpdateQueueItem("Copy: " + name + " → " + destination, "Downloading", split[0].TrimStart(), split[2].TrimStart(), split[3].Replace(" ETA ", ""));
+                    UpdateQueueItem("[COPY]   " + name + " → " + destination, "Downloading", split[0].TrimStart(), split[2].TrimStart(), split[3].Replace(" ETA ", ""));
                 }
             }
         }
@@ -1217,7 +1229,7 @@ namespace rClone_GUI
                     string stats = split[2].TrimStart();
                     string[] split2 = stats.Split(',');
 
-                    UpdateQueueItem("Copy: " + name + " → " + destination, "Downloading", split2[0].TrimStart(), split2[2].TrimStart(), split2[3].Replace(" ETA ", ""));
+                    UpdateQueueItem("[COPY]   " + name + " → " + destination, "Downloading", split2[0].TrimStart(), split2[2].TrimStart(), split2[3].Replace(" ETA ", ""));
                 } 
             }
         }
@@ -1241,7 +1253,12 @@ namespace rClone_GUI
 
         public void PurgeOutput(object sendingProcess, DataReceivedEventArgs line, string name)
         {
-            throw new NotImplementedException();
+            if (!String.IsNullOrEmpty(line.Data))
+            {
+                string lineData = line.Data;
+
+                MessageBox.Show(lineData);
+            }
         }
 
 

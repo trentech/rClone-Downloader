@@ -59,10 +59,11 @@ namespace rClone_GUI
             this.columnHeader12 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader13 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.contextMenuQueue = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.startStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.retryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cancelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.startStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.drivesList = new System.Windows.Forms.ComboBox();
             this.panel3 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -81,7 +82,6 @@ namespace rClone_GUI
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.panel5 = new System.Windows.Forms.Panel();
-            this.retryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panelLog.SuspendLayout();
             this.contextMenuRemote.SuspendLayout();
             this.contextMenuQueue.SuspendLayout();
@@ -225,6 +225,7 @@ namespace rClone_GUI
             this.columnHeader4});
             this.listRemoteFiles.ContextMenuStrip = this.contextMenuRemote;
             this.listRemoteFiles.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listRemoteFiles.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.listRemoteFiles.GridLines = true;
             this.listRemoteFiles.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listRemoteFiles.HideSelection = false;
@@ -247,17 +248,17 @@ namespace rClone_GUI
             // columnHeader3
             // 
             this.columnHeader3.Text = "Name";
-            this.columnHeader3.Width = 365;
+            this.columnHeader3.Width = 340;
             // 
             // columnHeader10
             // 
             this.columnHeader10.Text = "Date Modified";
-            this.columnHeader10.Width = 120;
+            this.columnHeader10.Width = 140;
             // 
             // columnHeader4
             // 
             this.columnHeader4.Text = "Size";
-            this.columnHeader4.Width = 80;
+            this.columnHeader4.Width = 85;
             // 
             // contextMenuRemote
             // 
@@ -316,6 +317,7 @@ namespace rClone_GUI
             this.columnHeader13});
             this.listQueue.ContextMenuStrip = this.contextMenuQueue;
             this.listQueue.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listQueue.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.listQueue.GridLines = true;
             this.listQueue.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listQueue.HideSelection = false;
@@ -333,27 +335,27 @@ namespace rClone_GUI
             // columnHeader1
             // 
             this.columnHeader1.Text = "Operation";
-            this.columnHeader1.Width = 735;
+            this.columnHeader1.Width = 662;
             // 
             // columnHeader2
             // 
             this.columnHeader2.Text = "Status";
-            this.columnHeader2.Width = 94;
+            this.columnHeader2.Width = 136;
             // 
             // columnHeader5
             // 
             this.columnHeader5.Text = "Progress";
-            this.columnHeader5.Width = 142;
+            this.columnHeader5.Width = 163;
             // 
             // columnHeader7
             // 
             this.columnHeader7.Text = "Speed";
-            this.columnHeader7.Width = 105;
+            this.columnHeader7.Width = 108;
             // 
             // columnHeader8
             // 
             this.columnHeader8.Text = "ETA";
-            this.columnHeader8.Width = 74;
+            this.columnHeader8.Width = 81;
             // 
             // columnHeader12
             // 
@@ -377,6 +379,18 @@ namespace rClone_GUI
             this.contextMenuQueue.Size = new System.Drawing.Size(153, 114);
             this.contextMenuQueue.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.onListQueueContextMenuClick);
             // 
+            // startStripMenuItem1
+            // 
+            this.startStripMenuItem1.Name = "startStripMenuItem1";
+            this.startStripMenuItem1.Size = new System.Drawing.Size(152, 22);
+            this.startStripMenuItem1.Text = "Process Queue";
+            // 
+            // retryToolStripMenuItem
+            // 
+            this.retryToolStripMenuItem.Name = "retryToolStripMenuItem";
+            this.retryToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.retryToolStripMenuItem.Text = "Retry";
+            // 
             // removeToolStripMenuItem
             // 
             this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
@@ -394,12 +408,6 @@ namespace rClone_GUI
             this.cancelToolStripMenuItem.Name = "cancelToolStripMenuItem";
             this.cancelToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.cancelToolStripMenuItem.Text = "Cancel";
-            // 
-            // startStripMenuItem1
-            // 
-            this.startStripMenuItem1.Name = "startStripMenuItem1";
-            this.startStripMenuItem1.Size = new System.Drawing.Size(152, 22);
-            this.startStripMenuItem1.Text = "Process Queue";
             // 
             // drivesList
             // 
@@ -449,6 +457,7 @@ namespace rClone_GUI
             this.columnHeader11});
             this.listLocalFiles.ContextMenuStrip = this.contextMenuLocal;
             this.listLocalFiles.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listLocalFiles.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.listLocalFiles.GridLines = true;
             this.listLocalFiles.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listLocalFiles.HideSelection = false;
@@ -468,17 +477,17 @@ namespace rClone_GUI
             // columnHeader6
             // 
             this.columnHeader6.Text = "Name";
-            this.columnHeader6.Width = 365;
+            this.columnHeader6.Width = 340;
             // 
             // columnHeader9
             // 
             this.columnHeader9.Text = "Date Modified";
-            this.columnHeader9.Width = 120;
+            this.columnHeader9.Width = 145;
             // 
             // columnHeader11
             // 
             this.columnHeader11.Text = "Size";
-            this.columnHeader11.Width = 80;
+            this.columnHeader11.Width = 85;
             // 
             // contextMenuLocal
             // 
@@ -606,12 +615,6 @@ namespace rClone_GUI
             this.panel5.Name = "panel5";
             this.panel5.Size = new System.Drawing.Size(570, 308);
             this.panel5.TabIndex = 1;
-            // 
-            // retryToolStripMenuItem
-            // 
-            this.retryToolStripMenuItem.Name = "retryToolStripMenuItem";
-            this.retryToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.retryToolStripMenuItem.Text = "Retry";
             // 
             // MainUI
             // 
