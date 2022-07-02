@@ -1223,7 +1223,7 @@ namespace rClone_GUI
 
             if (!String.IsNullOrEmpty(line.Data))
             {
-                if (line.Data.StartsWith(" *"))
+                if (line.Data.StartsWith(" *") && line.Data.Contains(":"))
                 {
                     string[] split = line.Data.Replace("*", "").TrimStart().Split(':');
                     string stats = split[2].TrimStart();
