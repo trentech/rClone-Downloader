@@ -529,9 +529,11 @@ namespace rClone_GUI
                     destination = destination.Substring(0, destination.Length - 1);
                 }
 
-                string operation = "Sync: " + (source + " == " + destination).Replace(@"\\", @"\");
+                string operation = "Sync: " + (destination + " == " + source).Replace(@"\\", @"\");
 
                 AddToQueue(operation, "Queued", true);
+
+                ProcessQueue();
             }
         }
 
@@ -554,7 +556,7 @@ namespace rClone_GUI
                 {
                     foreach (ListViewItem item in listRemoteFiles.SelectedItems)
                     {
-                        string fileName = textBoxLocal.Text + @"\" + item.SubItems[0].Text;
+                        string fileName = drivesList.SelectedItem.ToString() + ":" + textBoxRemote.Text + "/" + item.SubItems[0].Text;
 
                         string operation;
                         if (item.ImageIndex == 1)
@@ -595,6 +597,8 @@ namespace rClone_GUI
                 string operation = "Sync: " + (source + " == " + destination).Replace(@"\\", @"\");
 
                 AddToQueue(operation, "Queued", true);
+
+                ProcessQueue();
             }
         }
 
@@ -618,6 +622,22 @@ namespace rClone_GUI
                     {
                         listQueue.Items.Remove(file);
                     }
+                }
+            } else if(e.ClickedItem.Text == "Retry")
+            {
+                if(listQueue.SelectedItems.Count > 0)
+                {
+                    foreach (ListViewItem file in listQueue.SelectedItems)
+                    {
+                        string status = file.SubItems[1].Text;
+
+                        if (status.StartsWith("Error"))
+                        {
+                            UpdateQueueItem(file.SubItems[0].Text, "Queued");
+                        }
+                    }
+
+                    ProcessQueue();
                 }
             }
             else if (e.ClickedItem.Text == "Clear")
@@ -857,6 +877,8 @@ namespace rClone_GUI
                     UpdateQueueItem(operation, "Initializing");
 
                     error = await operations.Sync(this, fileName, destination);
+
+                    SearchRemote();
                 }
                 else if(operation.StartsWith("Copy:"))
                 {
@@ -902,6 +924,22 @@ namespace rClone_GUI
                     UpdateQueueItem(operation, "Initializing");
 
                     error = await operations.Copy(this, fileName, destination, Boolean.Parse(item.SubItems[7].Text));
+
+                    if (Directory.Exists(fileName.Substring(0, 3)))
+                    {
+                        string[] split2 = fileName.Split('\\');
+
+                        ListViewItem item1 = new ListViewItem(split2[split2.Length - 1]);
+                        item1.SubItems.Add(item.SubItems[5].Text);
+                        item1.SubItems.Add(item.SubItems[6].Text);
+                        item1.ImageIndex = 0;
+
+                        listRemoteFiles.Items.Add(item1);
+                    }
+                    else
+                    {
+                        SearchLocal(textBoxLocal.Text);
+                    }
                 } else if(operation.StartsWith("Delete:")) 
                 {
                     fileName = operation.Replace("Delete: ", "");
@@ -909,6 +947,13 @@ namespace rClone_GUI
                     UpdateQueueItem(operation, "Initializing");
 
                     error = await operations.DeleteFile(fileName);
+
+                    fileName = fileName.Substring(fileName.LastIndexOf('/') + 1);
+
+                    if(listRemoteFiles.FindItemWithText(fileName) != null)
+                    {
+                        listRemoteFiles.FindItemWithText(fileName).Remove();
+                    }
                 }
                 else
                 {
@@ -926,22 +971,6 @@ namespace rClone_GUI
                 else
                 {
                     UpdateQueueItem(operation, "Complete");
-
-                    if (Directory.Exists(fileName.Substring(0, 3)))
-                    {
-                        string[] split = fileName.Split('\\');
-
-                        ListViewItem item1 = new ListViewItem(split[split.Length - 1]);
-                        item1.SubItems.Add(item.SubItems[5].Text);
-                        item1.SubItems.Add(item.SubItems[6].Text);
-                        item1.ImageIndex = 0;
-
-                        listRemoteFiles.Items.Add(item1);
-                    }
-                    else
-                    {
-                        SearchLocal(textBoxLocal.Text);
-                    }
                 }
             }
 
@@ -996,19 +1025,21 @@ namespace rClone_GUI
         }
         private void AddToQueue(string operation, string status, string size, string date, bool isDirectory)
         {
-            if (listQueue.FindItemWithText(operation) == null)
+            if (listQueue.FindItemWithText(operation) != null)
             {
-                ListViewItem item = new ListViewItem(operation);
-                item.SubItems.Add(status);
-                item.SubItems.Add("");
-                item.SubItems.Add("");
-                item.SubItems.Add("");
-                item.SubItems.Add(size);
-                item.SubItems.Add(date);
-                item.SubItems.Add(isDirectory.ToString());
-
-                listQueue.Items.Add(item);
+                listQueue.FindItemWithText(operation).Remove();
             }
+
+            ListViewItem item = new ListViewItem(operation);
+            item.SubItems.Add(status);
+            item.SubItems.Add("");
+            item.SubItems.Add("");
+            item.SubItems.Add("");
+            item.SubItems.Add(size);
+            item.SubItems.Add(date);
+            item.SubItems.Add(isDirectory.ToString());
+
+            listQueue.Items.Add(item);
         }
 
         private void AddToQueue(string operation, string status, bool isDirectory)
@@ -1119,9 +1150,10 @@ namespace rClone_GUI
 
             if (!String.IsNullOrEmpty(line.Data))
             {
-                if(line.Data.Contains("transferringTransferred:"))
-                {                
-                    string stats = line.Data.Split(':')[2].TrimStart();
+                
+                if(line.Data.Contains("-Transferred:"))
+                {
+                    string stats = line.Data.Substring(line.Data.IndexOf("-Transferred:")).Replace("-Transferred:", "").TrimStart();
                     string[] split = stats.Split(',');
                     UpdateQueueItem("Sync: " + name + " == " + destination, "Syncing", split[0].TrimStart(), split[2].TrimStart(), split[3].Replace(" ETA ", ""));
                 }

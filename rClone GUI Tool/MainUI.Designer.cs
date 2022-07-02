@@ -81,6 +81,7 @@ namespace rClone_GUI
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.panel5 = new System.Windows.Forms.Panel();
+            this.retryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panelLog.SuspendLayout();
             this.contextMenuRemote.SuspendLayout();
             this.contextMenuQueue.SuspendLayout();
@@ -367,36 +368,37 @@ namespace rClone_GUI
             // contextMenuQueue
             // 
             this.contextMenuQueue.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.startStripMenuItem1,
+            this.retryToolStripMenuItem,
             this.removeToolStripMenuItem,
             this.clearToolStripMenuItem,
-            this.cancelToolStripMenuItem,
-            this.startStripMenuItem1});
+            this.cancelToolStripMenuItem});
             this.contextMenuQueue.Name = "contextMenuStrip1";
-            this.contextMenuQueue.Size = new System.Drawing.Size(181, 114);
+            this.contextMenuQueue.Size = new System.Drawing.Size(153, 114);
             this.contextMenuQueue.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.onListQueueContextMenuClick);
             // 
             // removeToolStripMenuItem
             // 
             this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            this.removeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.removeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.removeToolStripMenuItem.Text = "Remove";
             // 
             // clearToolStripMenuItem
             // 
             this.clearToolStripMenuItem.Name = "clearToolStripMenuItem";
-            this.clearToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.clearToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.clearToolStripMenuItem.Text = "Clear";
             // 
             // cancelToolStripMenuItem
             // 
             this.cancelToolStripMenuItem.Name = "cancelToolStripMenuItem";
-            this.cancelToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.cancelToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.cancelToolStripMenuItem.Text = "Cancel";
             // 
             // startStripMenuItem1
             // 
             this.startStripMenuItem1.Name = "startStripMenuItem1";
-            this.startStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.startStripMenuItem1.Size = new System.Drawing.Size(152, 22);
             this.startStripMenuItem1.Text = "Process Queue";
             // 
             // drivesList
@@ -605,6 +607,12 @@ namespace rClone_GUI
             this.panel5.Size = new System.Drawing.Size(570, 308);
             this.panel5.TabIndex = 1;
             // 
+            // retryToolStripMenuItem
+            // 
+            this.retryToolStripMenuItem.Name = "retryToolStripMenuItem";
+            this.retryToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.retryToolStripMenuItem.Text = "Retry";
+            // 
             // MainUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -695,6 +703,7 @@ namespace rClone_GUI
         private System.Windows.Forms.ToolStripMenuItem newFolderToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem syncToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem syncToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem retryToolStripMenuItem;
     }
 }
 
