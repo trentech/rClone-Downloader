@@ -12,6 +12,7 @@ public class Operations
     private Process ListProcess { get; set; }
     private Process CopyProcess { get; set; }
     private Process DeleteProcess { get; set; }
+    private Process MkDirProcess { get; set; }
     private Process PurgeProcess { get; set; }
 
     public Operations(string client)
@@ -102,6 +103,7 @@ public class Operations
         return error;
     }
 
+
     public async Task<string> Sync(Output output, string name, string destination)
     {
         string error = "";
@@ -135,6 +137,38 @@ public class Operations
         return error;
     }
 
+    public async Task<string> MkDir(string name)
+    {
+        string error = "";
+
+        await Task.Run(() =>
+        {
+            MkDirProcess = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = Client,
+                    Arguments = "mkdir \"" + name + "\"",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                }
+            };
+
+            MkDirProcess.Start();
+            MkDirProcess.BeginOutputReadLine();
+            MkDirProcess.WaitForExit();
+
+            error = MkDirProcess.StandardError.ReadToEnd();
+
+            MkDirProcess.Close();
+            MkDirProcess = null;
+        });
+
+        return error;
+    }
+
     public async Task<string> DeleteFile(string name)
     {
         string error = "";
@@ -146,7 +180,7 @@ public class Operations
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = Client,
-                    Arguments = "deletefile \"" + name + "\" --progress",
+                    Arguments = "deletefile \"" + name + "\"",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,

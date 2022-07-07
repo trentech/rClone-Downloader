@@ -561,10 +561,10 @@ namespace rClone_GUI
                         string operation;
                         if (item.ImageIndex == 1)
                         {
-                            operation = "[PURGE]  " + (fileName).Replace("//", "/").Replace(@"\\", @"\");
+                            operation = "[PURGE]  " + (fileName).Replace("//", "/");
                         } else
                         {
-                            operation = "[DELETE] " + (fileName).Replace("//", "/").Replace(@"\\", @"\");
+                            operation = "[DELETE] " + (fileName).Replace("//", "/");
                         }
 
                         AddToQueue(operation, "Queued", (item.ImageIndex == 1));
@@ -581,7 +581,13 @@ namespace rClone_GUI
 
                 if (result == DialogResult.OK)
                 {
-                    // ADD LOGIC
+                    string source = drivesList.SelectedItem.ToString() + ":" + textBoxRemote.Text + "/" + dialog.getName();
+
+                    string operation = "[MKDIR]  " + (source).Replace("//", "/");
+
+                    AddToQueue(operation, "Queued", true);
+
+                    ProcessQueue();
                 }
             }
             else if (e.ClickedItem.Text == "Sync")
@@ -731,7 +737,7 @@ namespace rClone_GUI
                     total = total+ sizeDouble;
                 }
 
-                Write("Folders: " + folders.Count + "    Files: " + listRemoteFiles.Items.Count + "    Total: " + ConvertSize(total));
+                Write("Folders: " + folders.Count + "    Files: " + (listRemoteFiles.Items.Count - 1) + "    Total: " + ConvertSize(total));
             }
 
             drivesList.Enabled = true;
@@ -739,7 +745,11 @@ namespace rClone_GUI
             buttonSearch.Enabled = true;
 
             listRemoteFiles.Focus();
-            listRemoteFiles.Items[1].Selected = true;
+
+            if(listRemoteFiles.Items.Count > 1)
+            {
+                listRemoteFiles.Items[1].Selected = true;
+            }
         }
 
         private void SearchLocal(string selectedDirectory)
@@ -956,6 +966,27 @@ namespace rClone_GUI
                         if (listRemoteFiles.FindItemWithText(fileName) != null)
                         {
                             listRemoteFiles.FindItemWithText(fileName).Remove();
+                        }
+                    }
+                }
+                else if (operation.StartsWith("[MKDIR]"))
+                {
+                    fileName = operation.Replace("[MKDIR]  ", "");
+
+                    UpdateQueueItem(operation, "Initializing");
+
+                    error = await operations.MkDir(fileName);
+
+                    if (error == null || error == "")
+                    {
+                        fileName = fileName.Substring(fileName.LastIndexOf('/') + 1);
+
+                        if (listRemoteFiles.FindItemWithText(fileName) == null)
+                        {
+                            ListViewItem item1 = new ListViewItem(fileName);
+                            item1.ImageIndex = 1;
+
+                            listRemoteFiles.Items.Add(item1);
                         }
                     }
                 }
