@@ -1,10 +1,9 @@
-﻿using rClone_Wrapper;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-public class Operations
+public class RCloneWrapper
 {
     public string Client { get; set; }
 
@@ -15,12 +14,17 @@ public class Operations
     private Process MkDirProcess { get; set; }
     private Process PurgeProcess { get; set; }
 
-    public Operations(string client)
+    public event Event.ListHandler OnList;
+    public event Event.CopyHandler OnCopy;
+    public event Event.SyncHandler OnSync;
+    public event Event.PurgeHandler OnPurge;
+
+    public RCloneWrapper(string client)
     {
         Client = client;
     }
 
-    public async Task<string> List(Output output, string path, string filter)
+    public async Task<string> List(string path, string filter)
     {
         string error = "";
 
@@ -29,11 +33,11 @@ public class Operations
 
         await Task.Run(() =>
         {
-            string args = "lsf --format stp --separator \"|\" \"" + path + "\"";
+            string processArgs = "lsf --format stp --separator \"|\" \"" + path + "\"";
 
             if(filter != null)
             {
-                args = args + " " + filter;
+                processArgs = processArgs + " " + filter;
             }
 
             ListProcess = new Process
@@ -41,7 +45,7 @@ public class Operations
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = Client,
-                    Arguments = args,
+                    Arguments = processArgs,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
@@ -49,7 +53,7 @@ public class Operations
                 }
             };
 
-            ListProcess.OutputDataReceived += (Object _sender, DataReceivedEventArgs _args) => output.ListOutput(_sender, _args);
+            ListProcess.OutputDataReceived += (Object sender, DataReceivedEventArgs args) => ListOutput(sender, args);
             ListProcess.Start();
             ListProcess.BeginOutputReadLine();
             ListProcess.WaitForExit();
@@ -63,7 +67,8 @@ public class Operations
         return error;
     }
 
-    public async Task<string> Copy(Output output, string name, string destination, bool isDirectory)
+
+    public async Task<string> Copy(string name, string destination, bool isDirectory)
     {
         string error = "";
 
@@ -82,14 +87,7 @@ public class Operations
                 }
             };
 
-            if(isDirectory)
-            {
-                CopyProcess.OutputDataReceived += (Object _sender, DataReceivedEventArgs _args) => output.CopyDirectoryOutput(_sender, _args, name, destination);
-            } else
-            {
-                CopyProcess.OutputDataReceived += (Object _sender, DataReceivedEventArgs _args) => output.CopyFileOutput(_sender, _args, name, destination);
-            }
-            
+            CopyProcess.OutputDataReceived += (Object sender, DataReceivedEventArgs args) => CopyOutput(sender, args, name, destination, isDirectory);
             CopyProcess.Start();
             CopyProcess.BeginOutputReadLine();
             CopyProcess.WaitForExit();
@@ -104,7 +102,7 @@ public class Operations
     }
 
 
-    public async Task<string> Sync(Output output, string name, string destination)
+    public async Task<string> Sync(string name, string destination)
     {
         string error = "";
 
@@ -123,7 +121,7 @@ public class Operations
                 }
             };
 
-            SyncProcess.OutputDataReceived += (Object _sender, DataReceivedEventArgs _args) => output.SyncOutput(_sender, _args, name, destination);
+            SyncProcess.OutputDataReceived += (Object sender, DataReceivedEventArgs args) => SyncOutput(sender, args, name, destination);
             SyncProcess.Start();
             SyncProcess.BeginOutputReadLine();
             SyncProcess.WaitForExit();
@@ -136,6 +134,7 @@ public class Operations
 
         return error;
     }
+
 
     public async Task<string> MkDir(string name)
     {
@@ -201,7 +200,7 @@ public class Operations
         return error;
     }
 
-    public async Task<string> Purge(Output output, string name)
+    public async Task<string> Purge(string name)
     {
         string error = "";
 
@@ -220,7 +219,7 @@ public class Operations
                 }
             };
 
-            PurgeProcess.OutputDataReceived += (Object _sender, DataReceivedEventArgs _args) => output.PurgeOutput(_sender, _args, name);
+            PurgeProcess.OutputDataReceived += (Object sender, DataReceivedEventArgs args) => PurgeOutput(sender, args, name);
             PurgeProcess.Start();
             PurgeProcess.BeginOutputReadLine();
             PurgeProcess.WaitForExit();
@@ -234,7 +233,64 @@ public class Operations
         return error;
     }
 
-    public void Kill()
+    private void SyncOutput(object sender, DataReceivedEventArgs args, string name, string destination)
+    {
+        if (!String.IsNullOrEmpty(args.Data))
+        {
+            if (args.Data.Contains("-Transferred:"))
+            {
+                string stats = args.Data.Substring(args.Data.IndexOf("-Transferred:")).Replace("-Transferred:", "").TrimStart();
+                string[] split = stats.Split(',');
+
+                OnSync(this, new Event.SyncArgs(name, destination, split[0].TrimStart(), split[2].TrimStart(), split[3].Replace(" ETA ", "")));
+            }
+        }
+    }
+
+    private void PurgeOutput(object sender, DataReceivedEventArgs args, string name)
+    {
+        if (!String.IsNullOrEmpty(args.Data))
+        {
+            string lineData = args.Data;
+
+            Console.WriteLine(lineData);
+
+            // I NEVER FINISHED THIS APPARENTLY
+        }
+    }
+
+    private void ListOutput(object sender, DataReceivedEventArgs args)
+    {
+        if (!String.IsNullOrEmpty(args.Data))
+        {
+            string lineData = args.Data;
+
+            if (lineData.Substring((lineData.Length - 1)) == "/")
+            {
+                OnList(this, new Event.ListArgs(lineData.Substring(0, (lineData.Length - 1)), true));
+            }
+            else
+            {
+                OnList(this, new Event.ListArgs(lineData, false));
+            }
+        }
+    }
+
+    private void CopyOutput(object sender, DataReceivedEventArgs args, string name, string destination, bool isDirectory)
+    {
+        if (!String.IsNullOrEmpty(args.Data))
+        {
+            if (args.Data.Contains("transferringTransferred:"))
+            {
+                string stats = args.Data.Split(':')[2].TrimStart();
+                string[] split = stats.Split(',');
+
+                OnCopy(this, new Event.CopyArgs(name, destination, split[0].TrimStart(), split[2].TrimStart(), split[3].Replace(" ETA ", ""), isDirectory));
+            }
+        }
+    }
+
+    public void StopProcesses()
     {
         if (ListProcess != null)
         {

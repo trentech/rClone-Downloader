@@ -6,19 +6,18 @@ using System.IO;
 using System.Globalization;
 using System.Drawing;
 using System.Linq;
-using rClone_Wrapper;
 using IniParser.Model;
 using IniParser;
 
 namespace rClone_GUI
 {
-    public partial class MainUI : Form, Output
+    public partial class MainUI : Form
     {
         [System.Runtime.InteropServices.DllImportAttribute("kernel32.dll", EntryPoint = "AllocConsole")]
         [return: System.Runtime.InteropServices.MarshalAsAttribute(System.Runtime.InteropServices.UnmanagedType.Bool)]
         public static extern bool AllocConsole();
 
-        private Operations operations;
+        private RCloneWrapper wrapper;
 
         private List<string> folders = new List<string>();
         private List<string> files = new List<string>();
@@ -105,7 +104,12 @@ namespace rClone_GUI
                 radioPrompt.Checked = false;
             }
 
-            operations = new Operations(rClone);
+            wrapper = new RCloneWrapper(rClone);
+
+            wrapper.OnList += (Object sender, Event.ListArgs args) => ListOutput(sender, args);
+            wrapper.OnCopy += (Object sender, Event.CopyArgs args) => CopyOutput(sender, args);
+            wrapper.OnSync += (Object sender, Event.SyncArgs args) => SyncOutput(sender, args);
+            wrapper.OnPurge += (Object sender, Event.PurgeArgs args) => PurgeOutput(sender, args);
         }
 
         private void onButtonSearch(object sender, EventArgs e)
@@ -690,7 +694,7 @@ namespace rClone_GUI
                 filter = textBoxFilter.Text;
             }
 
-            string error = await operations.List(this, source, filter);
+            string error = await wrapper.List(source, filter);
 
             if (error != "")
             {
@@ -886,7 +890,7 @@ namespace rClone_GUI
 
                     UpdateQueueItem(operation, "Initializing");
 
-                    error = await operations.Sync(this, fileName, destination);
+                    error = await wrapper.Sync(fileName, destination);
 
                     SearchRemote();
                 }
@@ -933,7 +937,7 @@ namespace rClone_GUI
 
                     UpdateQueueItem(operation, "Initializing");
 
-                    error = await operations.Copy(this, fileName, destination, Boolean.Parse(item.SubItems[7].Text));
+                    error = await wrapper.Copy(fileName, destination, Boolean.Parse(item.SubItems[7].Text));
 
                     if (Directory.Exists(fileName.Substring(0, 3)))
                     {
@@ -957,7 +961,7 @@ namespace rClone_GUI
 
                     UpdateQueueItem(operation, "Initializing");
 
-                    error = await operations.DeleteFile(fileName);
+                    error = await wrapper.DeleteFile(fileName);
 
                     if (error == null || error == "")
                     {
@@ -975,7 +979,7 @@ namespace rClone_GUI
 
                     UpdateQueueItem(operation, "Initializing");
 
-                    error = await operations.MkDir(fileName);
+                    error = await wrapper.MkDir(fileName);
 
                     if (error == null || error == "")
                     {
@@ -994,7 +998,7 @@ namespace rClone_GUI
                 {
                     fileName = operation.Replace("[PURGE]  ", "");
 
-                    error = await operations.Purge(this, fileName);
+                    error = await wrapper.Purge(fileName);
 
                     SearchRemote();
                 }
@@ -1036,7 +1040,7 @@ namespace rClone_GUI
 
         private void onClosing(object sender, FormClosingEventArgs e)
         {
-            operations.Kill();
+            wrapper.StopProcesses();
 
             IniData data = new IniData();
 
@@ -1173,11 +1177,11 @@ namespace rClone_GUI
             }
         }
 
-        public void SyncOutput(object sendingProcess, DataReceivedEventArgs line, string name, string destination)
+        public void SyncOutput(object sender, Event.SyncArgs args)
         {
             if (cancelCopy)
             {
-                Process process = sendingProcess as Process;
+                Process process = sender as Process;
 
                 try
                 {
@@ -1185,29 +1189,20 @@ namespace rClone_GUI
                 }
                 catch { }
 
-                if (File.Exists(destination))
+                if (File.Exists(args.Destination))
                 {
-                    File.Delete(destination);
+                    File.Delete(args.Destination);
                 }
             }
 
-            if (!String.IsNullOrEmpty(line.Data))
-            {
-                
-                if(line.Data.Contains("-Transferred:"))
-                {
-                    string stats = line.Data.Substring(line.Data.IndexOf("-Transferred:")).Replace("-Transferred:", "").TrimStart();
-                    string[] split = stats.Split(',');
-                    UpdateQueueItem("[SYNC]   " + name + " == " + destination, "Syncing", split[0].TrimStart(), split[2].TrimStart(), split[3].Replace(" ETA ", ""));
-                }
-            }
+            UpdateQueueItem("[SYNC]   " + args.Name + " == " + args.Destination, "Syncing", args.Progress, args.Speed, args.ETA);
         }
 
-        public void CopyDirectoryOutput(object sendingProcess, DataReceivedEventArgs line, string name, string destination)
+        public void CopyOutput(object sender, Event.CopyArgs args)
         {
             if (cancelCopy)
             {
-                Process process = sendingProcess as Process;
+                Process process = sender as Process;
 
                 try
                 {
@@ -1215,83 +1210,29 @@ namespace rClone_GUI
                 }
                 catch { }
 
-                if (File.Exists(destination))
+                if (File.Exists(args.Destination))
                 {
-                    File.Delete(destination);
+                    File.Delete(args.Destination);
                 }
             }
 
-            if (!String.IsNullOrEmpty(line.Data))
-            {
-                if (line.Data.Contains("transferringTransferred:"))
-                {
-                    string stats = line.Data.Split(':')[2].TrimStart();
-                    string[] split = stats.Split(',');
-                    UpdateQueueItem("[COPY]   " + name + " → " + destination, "Downloading", split[0].TrimStart(), split[2].TrimStart(), split[3].Replace(" ETA ", ""));
-                }
-            }
+            UpdateQueueItem("[COPY]   " + args.Name + " → " + args.Destination, "Downloading", args.Progress, args.Speed, args.ETA);
         }
 
-        public void CopyFileOutput(object sendingProcess, DataReceivedEventArgs line, string name, string destination)
+        public void ListOutput(object sender, Event.ListArgs args)
         {
-            if (cancelCopy)
+            if(args.isDirectory)
             {
-                Process process = sendingProcess as Process;
-
-                try
-                {
-                    process.Kill();
-                }
-                catch { }
-
-                if (File.Exists(destination))
-                {
-                    File.Delete(destination);
-                }
-
-                return;
-            }
-
-            if (!String.IsNullOrEmpty(line.Data))
+                folders.Add(args.Name);
+            } else
             {
-                if (line.Data.StartsWith(" *") && line.Data.Contains(":"))
-                {
-                    string[] split = line.Data.Replace("*", "").TrimStart().Split(':');
-                    string stats = split[2].TrimStart();
-                    string[] split2 = stats.Split(',');
-
-                    UpdateQueueItem("[COPY]   " + name + " → " + destination, "Downloading", split2[0].TrimStart(), split2[2].TrimStart(), split2[3].Replace(" ETA ", ""));
-                } 
+                files.Add(args.Name);
             }
         }
 
-        public void ListOutput(object sendingProcess, DataReceivedEventArgs line)
+        public void PurgeOutput(object sender, Event.PurgeArgs args)
         {
-            if (!String.IsNullOrEmpty(line.Data))
-            {
-                string lineData = line.Data;
 
-                if (lineData.Substring((lineData.Length - 1)) == "/")
-                {
-                    folders.Add(lineData.Substring(0, (lineData.Length - 1)));
-                }
-                else
-                {
-                    files.Add(lineData);
-                }
-            }
         }
-
-        public void PurgeOutput(object sendingProcess, DataReceivedEventArgs line, string name)
-        {
-            if (!String.IsNullOrEmpty(line.Data))
-            {
-                string lineData = line.Data;
-
-                MessageBox.Show(lineData);
-            }
-        }
-
-
     }
 }
