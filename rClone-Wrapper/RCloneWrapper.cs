@@ -280,7 +280,7 @@ public class RCloneWrapper
     {
         if (!String.IsNullOrEmpty(args.Data))
         {
-            if (args.Data.Contains("transferringTransferred:"))
+            if (args.Data.Contains(", Transferred:"))
             {
                 string stats = args.Data.Split(':')[2].TrimStart();
                 string[] split = stats.Split(',');
