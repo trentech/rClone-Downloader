@@ -70,7 +70,7 @@ namespace rClone_GUI
 
             Hide();
 
-            if (!File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\rclone\rclone.conf"))
+            if (!File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\.config\rclone\rclone.conf"))
             {
                 AllocConsole();
                 // NEED A WAY TO ALLOW USERS TO CONFIGURE RCLONE...

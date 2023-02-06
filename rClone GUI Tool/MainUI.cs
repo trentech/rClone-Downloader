@@ -41,7 +41,7 @@ namespace rClone_GUI
                 Y = Math.Max(workingArea.Y, workingArea.Y + (workingArea.Height - Height) / 2)
             };
 
-            string[] rCloneConfig = System.IO.File.ReadAllLines(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\rclone\rclone.conf");
+            string[] rCloneConfig = System.IO.File.ReadAllLines(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\.config\rclone\rclone.conf");
 
             foreach (string line in rCloneConfig)
             {
